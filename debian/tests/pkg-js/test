@@ -1,0 +1,31 @@
+ROLLUP="node ./dist/bin/rollup"
+
+echo "Testing 'rollup --help'..."
+$ROLLUP --help
+
+echo "Testing if version is updated correctly..."
+version_expected=$(grep version package.json | cut -d\" -f4)
+version_actual=$($ROLLUP --version |cut -dv -f2)
+echo "Version found in package.json: $version_expected"
+echo "Version returned by rollup --version: $version_actual"
+if [ "$version_actual" = "$version_expected" ]; then
+  echo "Version is configured correctly."
+else
+  echo "Update version in hardcode-version.patch"
+  exit 1
+fi
+
+echo "Testing if rollup can bundle a simple file..."
+cat >foo.js <<HERE
+export default 'hello world!';
+HERE
+cat >main.js <<HERE
+import foo from './foo.js';
+export default function () {
+  console.log(foo);
+}
+HERE
+$ROLLUP main.js -f cjs > bundle.js
+node -e "require('./bundle.js')();"
+rm -f ./bundle.js ./main.js ./foo.js
+rm -f node_modules/rollup

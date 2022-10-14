@@ -1,0 +1,16 @@
+Description: Use pluginutils cjs
+ Use cjs format from rollup-pluginutils as we don't build or ship these
+ individual js files in src (we only have indiviaul ts files and cjs bundle).
+ .
+ Bug, upstream: https://github.com/rollup/rollup/pull/3165
+Forwarded: yes
+
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -1,5 +1,5 @@
+ import * as path from 'path';
+-import createFilter from 'rollup-pluginutils/src/createFilter';
++import { createFilter } from 'rollup-pluginutils';
+ import { rollupInternal } from '../rollup/rollup';
+ import {
+ 	ChangeEvent,

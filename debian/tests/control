@@ -1,0 +1,4 @@
+Depends: @, @builddeps@
+Restrictions: allow-stderr
+Features: test-name=rebuild-itself
+Test-Command: dh_auto_configure --buildsystem=nodejs && ./debian/rules override_dh_auto_build

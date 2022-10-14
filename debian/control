@@ -1,0 +1,97 @@
+Source: node-rollup
+Maintainer: Debian Javascript Maintainers <pkg-javascript-devel@lists.alioth.debian.org>
+Uploaders:
+ Sruthi Chandran <srud@disroot.org>,
+ Pirate Praveen <praveen@debian.org>,
+ Bastien Roucariès <rouca@debian.org>
+Section: javascript
+Testsuite: autopkgtest-pkg-nodejs
+Priority: optional
+Build-Depends: debhelper-compat (= 13)
+ , dh-sequence-nodejs
+ , node-ansi-escapes
+ , node-array-find-index
+ , node-babel7
+ , node-chokidar (>= 2.1.6-3~)
+ , node-colorette
+ , node-date-time
+ , node-debbundle-acorn
+ , node-estree-walker
+ , node-hash.js
+ , node-is-reference (>= 1.2.1-2~)
+ , node-locate-character (>= 2.0.5-1~)
+ , node-magic-string (>= 0.25.4-3~)
+ , node-marked-man
+ , node-mkdirp (>= 1)
+ , node-moment
+ , node-pretty-bytes
+ , node-pretty-ms (>= 6.0.1)
+ , node-randombytes
+ , node-require-relative
+ , node-requirejs
+ , node-rollup-plugin-alias
+ , node-rollup-plugin-commonjs (>= 15.1.0)
+ , node-rollup-plugin-json (>= 4.1.0)
+ , node-rollup-plugin-node-resolve (>= 11~)
+ , node-rollup-plugin-replace (>= 2.3.3)
+ , node-rollup-plugin-string (>= 3.0.0-6~)
+ , node-rollup-plugin-typescript
+ , node-rollup-plugin-terser
+ , node-serialize-javascript
+ , node-signal-exit
+ , node-source-map
+ , node-sourcemap-codec (>= 1.4.8-2~)
+ , node-spdx-expression-parse
+ , node-typescript
+ , node-types-node
+ , node-yargs-parser <!nocheck>
+ , nodejs (>= 10)
+ , rollup (>= 1.32.1~)
+Standards-Version: 4.5.1
+Vcs-Browser: https://salsa.debian.org/js-team/node-rollup
+Vcs-Git: https://salsa.debian.org/js-team/node-rollup.git
+Homepage: https://rollupjs.org
+Rules-Requires-Root: no
+
+Package: rollup
+Architecture: all
+Depends: ${misc:Depends}
+ , node-ansi-escapes
+ , node-colorette
+ , node-date-time
+ , node-debbundle-acorn
+ , node-hash.js
+ , node-is-reference
+ , node-locate-character (>= 2.0.5-1~)
+ , node-magic-string (>= 0.25.4-3~)
+ , node-pretty-bytes
+ , node-pretty-ms (>= 6.0.1)
+ , node-require-relative
+ , node-rollup-pluginutils (>= 2.8.2-2~)
+ , node-signal-exit
+ , node-source-map
+ , node-sourcemap-codec
+ , node-yargs-parser
+ , nodejs (>= 10)
+Suggests: node-chokidar
+Breaks: node-rollup-plugin-babel (<< 3.0.3-5~)
+ , node-rollup-plugin-buble (<< 0.19.4-3~)
+ , node-rollup-plugin-commonjs (<< 10.0.1+really.9.2.0-12~)
+ , node-rollup-plugin-json (<< 4.0.0-4~)
+ , node-rollup-plugin-node-resolve (<< 3.4.0-3~)
+ , node-rollup-plugin-replace (<< 2.2.0-6~)
+ , node-rollup-plugin-string (<< 3.0.0-4)
+ , node-rollup-plugin-typescript (<< 1.0.0-2~)
+Provides: ${nodejs:Provides}
+Description: ES6 module bundler for JavaScript
+ Rollup is a module bundler for JavaScript which compiles small pieces of code
+ into something larger and more complex, such as a library or application. It
+ uses the standardized ES module format for code, instead of previous
+ idiosyncratic solutions such as CommonJS and AMD.
+ .
+ ES modules let you freely and seamlessly combine the most useful individual
+ functions from your favorite libraries. Rollup can optimize ES modules for
+ faster native loading in modern browsers, or output a legacy module format
+ allowing ES module workflows today.
+ .
+ node-chokidar is required to use the --watch option

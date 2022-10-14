@@ -1,0 +1,15 @@
+Description: don't build browser module
+Author: Xavier Guimard <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2021-01-29
+
+--- a/rollup.config.js
++++ b/rollup.config.js
+@@ -162,5 +162,6 @@
+ 		]
+ 	};
+ 
+-	return [commonJSBuild, esmBuild, browserBuilds];
++    //return [commonJSBuild, esmBuild, browserBuilds];
++	return [commonJSBuild, esmBuild];
+ };

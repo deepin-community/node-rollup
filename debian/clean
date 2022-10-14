@@ -1,0 +1,16 @@
+.commithash
+cli/*.js
+cli/run/*.js
+src/*.js
+src/**/*.js
+src/**/**/*.js
+src/**/**/**/*.js
+bin/src/*.js
+bin/src/**/*.js
+browser/*.js
+node_modules/
+rollup.1
+foo.js
+main.js
+bundle.js
+dist/

@@ -1,0 +1,17 @@
+Description: Disable help
+ Ugly hack: rollup is required for importing .md files. This removes circular
+ build dependency. This should be fixed properly when we have latest version of
+ rollup in the archive and a proper staged build is used.
+Forwarded: not-needed
+Reviewed-By: Xavier Guimard <yadd@debian.org>
+Last-Update: 2020-09-28
+
+--- a/cli/cli.ts
++++ b/cli/cli.ts
+@@ -1,4 +1,5 @@
+-import help from 'help.md';
++//import help from 'help.md';
++const help ='See /usr/share/doc/rollup/help.md or man rollup';
+ import { version } from 'package.json';
+ import argParser from 'yargs-parser';
+ import { commandAliases } from '../src/utils/options/mergeOptions';

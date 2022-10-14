@@ -1,0 +1,23 @@
+Description: conditional-fsevents-import is for MacOS
+Author: Xavier Guimard <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2021-01-29
+
+--- a/rollup.config.js
++++ b/rollup.config.js
+@@ -8,7 +8,6 @@
+ import { terser } from 'rollup-plugin-terser';
+ import typescript from 'rollup-plugin-typescript';
+ import addCliEntry from './build-plugins/add-cli-entry.js';
+-import conditionalFsEventsImport from './build-plugins/conditional-fsevents-import';
+ import emitModulePackageFile from './build-plugins/emit-module-package-file.js';
+ import esmDynamicImport from './build-plugins/esm-dynamic-import.js';
+ import getLicenseHandler from './build-plugins/generate-license-file';
+@@ -64,7 +63,6 @@
+ 	alias(moduleAliases),
+ 	resolve(),
+ 	json(),
+-	conditionalFsEventsImport(),
+ 	string({ include: '**/*.md' }),
+ 	commonjs({ include: 'node_modules/**' }),
+ 	typescript()

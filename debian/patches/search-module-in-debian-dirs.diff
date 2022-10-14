@@ -1,0 +1,22 @@
+Description: search module also in Debian directories
+Author: Xavier Guimard <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2021-01-29
+
+--- a/rollup.config.js
++++ b/rollup.config.js
+@@ -59,9 +59,13 @@
+ 	tryCatchDeoptimization: false
+ };
+ 
++const resOpt = {
++  moduleDirectories: ['./node_modules','/usr/lib/nodejs','/usr/share/nodejs','debian/build_modules']
++};
++
+ const nodePlugins = [
+ 	alias(moduleAliases),
+-	resolve(),
++	resolve(resOpt),
+ 	json(),
+ 	string({ include: '**/*.md' }),
+ 	commonjs({ include: 'node_modules/**' }),

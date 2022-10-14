@@ -1,0 +1,32 @@
+Description: fix shebang
+Author: Xavier Guimard <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2020-09-28
+
+--- a/build-plugins/add-cli-entry.js
++++ b/build-plugins/add-cli-entry.js
+@@ -14,7 +14,7 @@
+ 		renderChunk(code, chunkInfo) {
+ 			if (chunkInfo.fileName === 'bin/rollup') {
+ 				const magicString = new MagicString(code);
+-				magicString.prepend('#!/usr/bin/env node\n\n');
++				magicString.prepend('#!/usr/bin/node\n\n');
+ 				return { code: magicString.toString(), map: magicString.generateMap({ hires: true }) };
+ 			}
+ 		}
+--- a/scripts/post-comment.js
++++ b/scripts/post-comment.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ const path = require('path');
+ const fetch = require('node-fetch');
+--- a/scripts/update-snapshots.js
++++ b/scripts/update-snapshots.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ const { readdirSync, copydirSync, copyFileSync, rimrafSync } = require('sander');
+ const { resolve, join } = require('path');

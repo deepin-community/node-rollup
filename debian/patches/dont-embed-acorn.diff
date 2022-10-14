@@ -1,0 +1,39 @@
+Description: don't embed acorn
+Author: Xavier Guimard <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2021-02-18
+
+--- a/src/Graph.ts
++++ b/src/Graph.ts
+@@ -1,4 +1,4 @@
+-import * as acorn from 'acorn';
++const acorn = require('acorn');
+ import GlobalScope from './ast/scopes/GlobalScope';
+ import { PathTracker } from './ast/utils/PathTracker';
+ import ExternalModule from './ExternalModule';
+--- a/src/Module.ts
++++ b/src/Module.ts
+@@ -1,4 +1,4 @@
+-import * as acorn from 'acorn';
++const acorn = require('acorn');
+ import { locate } from 'locate-character';
+ import MagicString from 'magic-string';
+ import extractAssignedNames from 'rollup-pluginutils/src/extractAssignedNames';
+--- a/src/ModuleLoader.ts
++++ b/src/ModuleLoader.ts
+@@ -1,4 +1,4 @@
+-import * as acorn from 'acorn';
++const acorn = require('acorn');
+ import ExternalModule from './ExternalModule';
+ import Graph from './Graph';
+ import Module from './Module';
+--- a/src/utils/pureComments.ts
++++ b/src/utils/pureComments.ts
+@@ -1,5 +1,5 @@
+-import * as acorn from 'acorn';
+-import { base as basicWalker, BaseWalker } from 'acorn-walk';
++const acorn = require('acorn');
++const basicWalker = require('acorn-walk').base;
+ import { CallExpression, ExpressionStatement, NewExpression } from '../ast/nodes/NodeType';
+ import { Annotation } from '../ast/nodes/shared/Node';
+ 

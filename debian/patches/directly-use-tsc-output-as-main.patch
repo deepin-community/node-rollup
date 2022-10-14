@@ -1,0 +1,22 @@
+Description: Directly use tsc output as main
+ Use src/node-entry.js as package.json#main
+Forwarded: not-needed
+
+--- a/package.json
++++ b/package.json
+@@ -2,7 +2,7 @@
+   "name": "rollup",
+   "version": "1.32.1",
+   "description": "Next-generation ES module bundler",
+-  "main": "dist/rollup.js",
++  "main": "src/node-entry.js",
+   "module": "dist/rollup.es.js",
+   "typings": "dist/rollup.d.ts",
+   "bin": {
+--- a/src/node-entry.ts
++++ b/src/node-entry.ts
+@@ -1,3 +1,4 @@
+ export { default as rollup } from './rollup/index';
+ export { default as watch } from './watch/index';
+ export { version as VERSION } from 'package.json';
++export default exports;

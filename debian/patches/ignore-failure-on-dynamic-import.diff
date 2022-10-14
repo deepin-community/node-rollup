@@ -1,0 +1,14 @@
+Description: ignore failure on dynamic import
+Author: Xavier Guimard <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2020-09-28
+
+--- a/build-plugins/esm-dynamic-import.js
++++ b/build-plugins/esm-dynamic-import.js
+@@ -1,5 +1,5 @@
+ export default function addBinShebangAndEsmImport() {
+-	let importFound = false;
++	let importFound = true;
+ 	return {
+ 		name: 'esm-dynamic-import',
+ 		renderDynamicImport({ moduleId }) {

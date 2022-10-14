@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	rollup -c
+	cp src/rollup/types.d.ts dist/rollup.d.ts
+	chmod +x dist/bin/rollup
+	marked-man --version $$(grep version package.json | cut -d\" -f4) --gfm --breaks cli/help.md -o rollup.1
+
+override_dh_fixperms:
+	dh_fixperms
+	chmod +x debian/rollup/usr/share/nodejs/rollup/dist/bin/rollup

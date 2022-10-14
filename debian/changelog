@@ -1,0 +1,577 @@
+node-rollup (2.42.1-2) unstable; urgency=medium
+
+  * Team upload
+  * Back to unstable
+  * Add node-chokidar in suggested dependencies (Closes: #987154)
+
+ -- Yadd <yadd@debian.org>  Sun, 15 Aug 2021 11:45:45 +0200
+
+node-rollup (2.42.1-1) experimental; urgency=medium
+
+  * Team upload
+  * Update GitHub tags regex
+  * New upstream version 2.42.1
+  * Refresh patches
+
+ -- Yadd <yadd@debian.org>  Mon, 22 Mar 2021 05:47:58 +0100
+
+node-rollup (2.41.5-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream version 2.41.5
+  * Refresh patches
+
+ -- Yadd <yadd@debian.org>  Thu, 18 Mar 2021 07:46:45 +0100
+
+node-rollup (2.41.2-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream version 2.41.2
+  * Refresh patches
+
+ -- Yadd <yadd@debian.org>  Sun, 14 Mar 2021 12:04:04 +0100
+
+node-rollup (2.40.0-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream version 2.40.0
+  * Refresh patches
+
+ -- Yadd <yadd@debian.org>  Tue, 02 Mar 2021 06:47:16 +0100
+
+node-rollup (2.38.4-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 2.38.4
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Tue, 02 Feb 2021 15:00:27 +0100
+
+node-rollup (2.38.1-1) unstable; urgency=medium
+
+  * Team upload
+  * Remove useless build dependency to node-jest-worker
+  * New upstream version 2.38.1
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Fri, 29 Jan 2021 08:17:34 +0100
+
+node-rollup (2.38.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 2.38.0
+  * Refresh patches
+  * Replace embedded jest-worker, rollup-plugin-terser, serialize-javascript
+    by build dependencies to related packages
+  * Update copyright
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 25 Jan 2021 10:59:35 +0100
+
+node-rollup (2.37.1-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 2.37.1
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Fri, 22 Jan 2021 12:01:14 +0100
+
+node-rollup (2.36.2-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 2.36.2
+
+ -- Xavier Guimard <yadd@debian.org>  Sat, 16 Jan 2021 11:55:51 +0100
+
+node-rollup (2.35.1-1) unstable; urgency=medium
+
+  * Team upload
+  * Replace embedded colorette by dependency to node-colorette
+  * New upstream version 2.35.1
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 04 Jan 2021 16:12:08 +0100
+
+node-rollup (2.34.1-5) unstable; urgency=medium
+
+  * Source only upload to unstable (binary uploaded was required to bootstrap
+    as node-rollup-plugin-node-resolve added a Breaks for older rollup)
+
+ -- Pirate Praveen <praveen@debian.org>  Fri, 01 Jan 2021 13:50:07 +0530
+
+node-rollup (2.34.1-4) unstable; urgency=medium
+
+  * Reupload to unstable
+
+ -- Pirate Praveen <praveen@debian.org>  Fri, 01 Jan 2021 13:02:00 +0530
+
+node-rollup (2.34.1-3) experimental; urgency=medium
+
+  * Drop deprecated CustomResolveOptions from node-resolve plugin configuration
+    (update minimum version of node-rollup-plugin-node-resolve to 11)
+
+ -- Pirate Praveen <praveen@debian.org>  Thu, 31 Dec 2020 14:06:18 +0530
+
+node-rollup (2.34.1-2) unstable; urgency=medium
+
+  * Change node-acorn to node-debbundle-acorn in Depends too
+
+ -- Pirate Praveen <praveen@debian.org>  Fri, 11 Dec 2020 17:00:13 +0530
+
+node-rollup (2.34.1-1) unstable; urgency=medium
+
+  * Team upload
+  * Add ctype=nodejs to component(s)
+  * New upstream version 2.34.1
+  * Refresh patch
+
+ -- Xavier Guimard <yadd@debian.org>  Sat, 05 Dec 2020 12:13:42 +0100
+
+node-rollup (2.34.0-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 2.34.0
+  * Refresh patches
+  * Add build dependency to node-mkdirp ≥ 1
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 30 Nov 2020 10:30:36 +0100
+
+node-rollup (2.33.3-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 2.33.3
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Wed, 18 Nov 2020 18:19:05 +0100
+
+node-rollup (2.33.2-1) unstable; urgency=medium
+
+  * Team upload
+  * Buid colorette
+  * Declare compliance with policy 4.5.1
+  * New upstream version 2.33.2
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Wed, 18 Nov 2020 06:57:24 +0100
+
+node-rollup (2.33.1-1) unstable; urgency=medium
+
+  * Team upload
+  * Fix field name case in debian/tests/control (Test-command => Test-Command)
+  * Set upstream metadata fields: Bug-Submit
+  * Remove obsolete fields Contact, Name from debian/upstream/metadata
+    (already present in machine-readable debian/copyright)
+  * New upstream version 2.33.1
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Thu, 12 Nov 2020 12:32:09 +0100
+
+node-rollup (2.32.1-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 2.32.1
+
+ -- Xavier Guimard <yadd@debian.org>  Fri, 23 Oct 2020 17:48:31 +0200
+
+node-rollup (2.32.0-1) unstable; urgency=medium
+
+  * Team upload
+  * Clean duplicate colorette
+  * Update @rollup/plugin-commonjs dependency version
+  * New upstream version 2.32.0
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 19 Oct 2020 11:30:54 +0200
+
+node-rollup (2.28.2-3) unstable; urgency=medium
+
+  * Team upload
+  * Use dh-sequence-nodejs
+  * Fix rollup-plugin-commonjs path during build
+
+ -- Xavier Guimard <yadd@debian.org>  Sat, 10 Oct 2020 22:35:16 +0200
+
+node-rollup (2.28.2-2) unstable; urgency=medium
+
+  * Team upload
+  * Back to unstable after successful tests
+  * Install typescript types
+  * Import 1.32.1-3 changes
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 05 Oct 2020 14:31:33 +0200
+
+node-rollup (2.28.2-1) experimental; urgency=medium
+
+  * Team upload
+  * Add build dependency to node-rollup-plugin-string
+  * Add build dependency to rollup
+  * Component: replace turbocolor by colorette
+  * New upstream version 2.28.2
+  * Dependencies:
+    + add build dependency to rollup itself
+    + add build dependency to node-rollup-plugin-string
+    + update rollup dependencies to have @rollup/plugin*
+  * Patches
+    + refresh patches
+    + add patches to fix rollup build
+    + add patch to avoid acorn embedding
+  * Update build, this embeds the following modules for build only:
+    commenting, jest-worker, package-name-regex, rollup-plugin-license,
+    rollup-plugin-terser, serialize-javascript, spdx-compare,
+    spdx-expression-validate, spdx-ranges, spdx-satisfies
+  * Update test
+  * Update lintian overrides
+  * Add "rebuild itself" autopkgtest test
+  * Update copyright
+
+ -- Xavier Guimard <yadd@debian.org>  Thu, 01 Oct 2020 14:36:01 +0200
+
+node-rollup (1.32.1-3) unstable; urgency=medium
+
+  * Check if rollup command exist instead of require rollup check in
+    debian/tests/pkg-js/test as pkg-js-tools now creates node_modules/rollup
+    symbolic link and require test will pass but rollup command will not be
+    found (fixes ftbs).
+
+ -- Pirate Praveen <praveen@debian.org>  Sun, 04 Oct 2020 23:29:09 +0530
+
+node-rollup (1.32.1-2) unstable; urgency=medium
+
+  * Team upload
+  * Back to unstable after successful tests
+  * Indicates that rollup breaks:
+    + node-rollup-plugin-commonjs < 10.0.1+really.9.2.0-12~
+    + node-rollup-plugin-replace  < 2.2.0-6~
+  * Remove broken link to source-map-resolve
+
+ -- Xavier Guimard <yadd@debian.org>  Tue, 22 Sep 2020 22:19:48 +0200
+
+node-rollup (1.32.1-1) experimental; urgency=medium
+
+  * Team upload
+
+  [ Pirate Praveen ]
+  * Update minimum version of node-rollup-pluginutils
+
+  [ Xavier Guimard ]
+  * Update debian/watch to get last 1.x release
+  * New upstream version 1.32.1
+  * Refresh patches
+  * Update build & paths
+  * Require node-sourcemap-codec ≥ 1.4.8-2~ to have its types declarations
+  * Update lintian overrides
+  * Install typescript types
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 21 Sep 2020 14:26:31 +0200
+
+node-rollup (1.12.2-1) experimental; urgency=medium
+
+  * Team upload
+  * Refresh patches
+  * Update d/watch to 1.12.2
+  * New upstream version 1.12.2
+  * Update patches
+
+ -- Xavier Guimard <yadd@debian.org>  Thu, 02 Apr 2020 13:04:02 +0200
+
+node-rollup (1.12.0-3) unstable; urgency=medium
+
+  * Team upload
+  * Add fix for typescript ≥ 4 (Closes: #970651)
+  * Bump debhelper compatibility level to 13
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 21 Sep 2020 13:30:30 +0200
+
+node-rollup (1.12.0-2) unstable; urgency=medium
+
+  * Team upload
+  * Back to unstable
+
+ -- Xavier Guimard <yadd@debian.org>  Thu, 02 Apr 2020 11:11:10 +0200
+
+node-rollup (1.12.0-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream version 1.12.0
+  * Refresh patches
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 30 Mar 2020 13:37:21 +0200
+
+node-rollup (1.11.3-1) unstable; urgency=medium
+
+  * Team upload
+  * Update debian/watch to step 1.12.0
+  * New upstream version 1.11.3
+  * Refresh patches
+  * Use pkg-js-tools auto links
+  * Remove useless break agains node-rollup-plugin-alias ≤ 1.5.2-2~
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 30 Mar 2020 12:58:34 +0200
+
+node-rollup (1.11.2-2) unstable; urgency=medium
+
+  * Team upload
+  * Back to unstable
+
+ -- Xavier Guimard <yadd@debian.org>  Mon, 30 Mar 2020 12:29:13 +0200
+
+node-rollup (1.11.2-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream version 1.11.2
+  * Refresh patches
+  * Update version in patches
+  * Require node-pretty-ms ≥ 6.0.1
+
+ -- Xavier Guimard <yadd@debian.org>  Sat, 28 Mar 2020 08:22:47 +0100
+
+node-rollup (1.10.1-5) unstable; urgency=medium
+
+  * Team upload
+  * Remove also node-acorn-dynamic-import from binary dependency
+
+ -- Xavier Guimard <yadd@debian.org>  Sat, 21 Mar 2020 10:11:10 +0100
+
+node-rollup (1.10.1-4) unstable; urgency=medium
+
+  * Team upload
+  * Remove useless debian/dirs
+  * Remove duplicate dependencies to virtual packages provided by node-acorn:
+    this blocks many migrations
+
+ -- Xavier Guimard <yadd@debian.org>  Sat, 21 Mar 2020 09:58:41 +0100
+
+node-rollup (1.10.1-3) unstable; urgency=medium
+
+  * Team upload
+  * Back to unstable
+  * Declare compliance with policy 4.5.0
+  * Fix patches description
+  * Add "Provides: node-rollup"
+  * Update lintian overrides
+  * Fix build
+  * Fix copyright
+
+ -- Xavier Guimard <yadd@debian.org>  Fri, 13 Mar 2020 14:45:47 +0100
+
+node-rollup (1.10.1-2) experimental; urgency=medium
+
+  * Merge unstable to experimental
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 24 Feb 2020 22:55:23 +0100
+
+node-rollup (1.10.1-1) experimental; urgency=medium
+
+  * Update watch file to match newer releases
+  * New upstream version 1.10.1 (Closes: #942200)
+  * Use debian/nodejs/extlinks for creating node_modules links
+  * Tighten build dependency on node-typescript-types (for micromatch)
+  * Add estree-walker to extlinks
+  * Refresh patches and use exports instead of files from rollup-pluginutils
+  * Tighten dependency on node-rollup-pluginutils for new api and typings
+  * Update lintian overrides
+
+ -- Pirate Praveen <praveen@debian.org>  Tue, 15 Oct 2019 16:26:28 +0530
+
+node-rollup (1.0.2-1) experimental; urgency=medium
+
+  * New upstream version 1.0.2 (Closes: #942169)
+  * Tighten dependency on node-acorn to use acorn 6.x
+  * Use type definitions from node-acorn package
+  * Drop acorn-import-meta component
+  * Update lintian overrides
+
+ -- Pirate Praveen <praveen@debian.org>  Fri, 11 Oct 2019 17:11:02 +0530
+
+node-rollup (0.68.2+ds-4) unstable; urgency=medium
+
+  * Breaks with older node-rollup-plugin-babel now recompiled
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 24 Feb 2020 22:42:24 +0100
+
+node-rollup (0.68.2+ds-3) unstable; urgency=medium
+
+  * Allow older node-rollup-plugin-babel in order to compile
+    buble.
+
+ -- Bastien Roucariès <rouca@debian.org>  Sat, 22 Feb 2020 01:09:17 +0100
+
+node-rollup (0.68.2+ds-2) unstable; urgency=medium
+
+  * Fix a too strict depends on node-acorn
+
+ -- Bastien Roucariès <rouca@debian.org>  Sat, 22 Feb 2020 00:05:28 +0100
+
+node-rollup (0.68.2+ds-1) unstable; urgency=medium
+
+  * Build with acorn 6
+  * Drop acorn-import-meta component
+  * Fix a few lintian warnings
+
+ -- Bastien Roucariès <rouca@debian.org>  Fri, 21 Feb 2020 21:01:34 +0100
+
+node-rollup (0.68.2-2) unstable; urgency=medium
+
+  * Reupload to unstable
+  * Tighten dependency on node-magic-string
+  * Drop compat file, rely on debhelper-compat
+
+ -- Pirate Praveen <praveen@debian.org>  Thu, 10 Oct 2019 20:35:51 +0530
+
+node-rollup (0.68.2-1) experimental; urgency=medium
+
+  * New upstream version 0.68.2
+  * Refresh patches (remove typescript-2-to-3.patch)
+  * Add turbocolor, acorn-import-meta as components
+  * Create node_modules during build only if not present
+  * Patch to explicitly typecast for number to string conversion
+  * Hardcode version in more files
+  * Update links file for source-map-resolve
+  * Add node-pretty-bytes, node-hash.js to dependencies
+  * Add a test to verify hardcoded version is correct
+  * Setup node_modules/rollup symbolic link for tests
+  * Update lintian overrides
+  * Bump Standards-Version to 4.4.1 (no changes needed)
+  * Add a simple bundling test
+  * Update description with text from current README.md
+  * Read version for man page from package.json
+  * Clean files left over by failed tests
+  * Add a default export for src/node-entry.ts
+
+ -- Pirate Praveen <praveen@debian.org>  Wed, 09 Oct 2019 19:20:11 +0530
+
+node-rollup (0.56.3-2) unstable; urgency=medium
+
+  * Hard code version in help.md
+  * Formatting fixes for using marked-man with help.md
+  * Install help.md as documentation
+  * Use marked-man to generate manpage
+  * Mention help.md path and man rollup command for rollup --help
+
+ -- Pirate Praveen <praveen@debian.org>  Fri, 04 Oct 2019 16:43:00 +0530
+
+node-rollup (0.56.3-1) experimental; urgency=medium
+
+  * New upstream version 0.56.3
+  * Remove patch to use babel (now buble is used only for tests)
+  * Update dependencies (drop dependency on node-rollup-plugin-*, required
+    plugin should be added to build dependency of the respective package)
+  * Fix typescript errors during build (thanks to Jishnu Mohan)
+  * Hacks to disable .md and package.json handling
+  * Compat link for modules embedded in node-css (Workaround till node-css is
+    fixed)
+  * Simplify build, directly call tsc and rollup (switch to pkg-js-tools)
+  * Drop autopkgtest (we are not doing full build now)
+
+ -- Pirate Praveen <praveen@debian.org>  Mon, 30 Sep 2019 16:45:43 +0530
+
+node-rollup (0.53.0-1) unstable; urgency=medium
+
+  * New upstream version
+
+ -- Bastien Roucariès <rouca@debian.org>  Fri, 27 Sep 2019 16:21:28 +0200
+
+node-rollup (0.52.0-1) unstable; urgency=medium
+
+  [ Julien Puydt ]
+  * Point homepage to what upstream says (Closes: #883954).
+
+  [ Pirate Praveen ]
+  * New upstream version 0.52.0
+  * Bump Standards-Version to 4.3.0 (no changes needed)
+  * Add node-immutable as build and runtime dependency
+  * Switch to pkg-js-tools and install in /usr/share
+
+  [ Xavier Guimard ]
+  * Bump debhelper compatibility level to 12
+  * Declare compliance with policy 4.4.0
+  * Add debian/gbp.conf
+  * Add upstream/metadata
+
+ -- Pirate Praveen <praveen@debian.org>  Thu, 26 Sep 2019 14:33:38 +0530
+
+node-rollup (0.50.0-6) unstable; urgency=medium
+
+  * Allow stderr for debci
+
+ -- Bastien Roucariès <rouca@debian.org>  Tue, 01 Jan 2019 22:48:14 +0100
+
+node-rollup (0.50.0-5) unstable; urgency=medium
+
+  * Add depends on node-rollup-plugin-babel
+  * Add myself as uploader.
+
+ -- Bastien Roucariès <rouca@debian.org>  Tue, 01 Jan 2019 15:31:01 +0100
+
+node-rollup (0.50.0-4) unstable; urgency=medium
+
+  * Source upload. Now node-rollup is likely working.
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 31 Dec 2018 22:49:14 +0100
+
+node-rollup (0.50.0-3) unstable; urgency=medium
+
+  * Use babel instead of broken buble for compilation
+  * Use staged compulation.
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 31 Dec 2018 16:00:33 +0100
+
+node-rollup (0.50.0-2) unstable; urgency=medium
+
+  [ juggernaut451 ]
+  * Patch added to convert ES modules to CJS (skips self build dependency)
+    (Closes: #892133, #892742)
+
+  [ Pirate Praveen ]
+  * Update main entry in package.json and install rollup command
+  * Bump debhelper compatibility level to 11
+  * Bump Standards-Version to 4.2.1 (no changes needed)
+
+ -- Pirate Praveen <praveen@debian.org>  Thu, 25 Oct 2018 18:41:16 +0530
+
+node-rollup (0.50.0-1) unstable; urgency=medium
+
+  [ Julien Puydt ]
+  * New upstream release
+  * Bump dh compat to version 10
+  * Bump d/watch to version 4
+  * Use system node-rollup-plugin-buble
+
+  [ Pirate Praveen ]
+  * Bump std-ver to 4.1.3
+  * Move to main (all dependencies are in main and rollup can build itself with
+    initial bootstrap of a binary included upload)
+
+ -- Pirate Praveen <praveen@debian.org>  Sat, 20 Jan 2018 15:02:08 +0530
+
+node-rollup (0.47.4-3) unstable; urgency=medium
+
+  * Use rollup from system to build
+
+ -- Pirate Praveen <praveen@debian.org>  Tue, 19 Sep 2017 21:38:42 +0530
+
+node-rollup (0.47.4-2) unstable; urgency=medium
+
+  * Update dependencies
+  * Workaround for requiring rollup-pluginutils/src
+
+ -- Pirate Praveen <praveen@debian.org>  Tue, 19 Sep 2017 17:14:45 +0530
+
+node-rollup (0.47.4-1) unstable; urgency=medium
+
+  [ Julien Puydt ]
+  * New upstream release.
+  * Install less node-rollup-plugin-* packages using npm in d/rules, since
+  they are in Debian now.
+
+  [ Pirate Praveen ]
+  * Export HOME=/tmp suring build to make npm work in a chroot like sbuild
+  * Push standards-version up to 4.1.0.
+  * Add ca-certiicates to build dep, npm need it to work
+
+ -- Pirate Praveen <praveen@debian.org>  Thu, 07 Sep 2017 16:11:50 +0530
+
+node-rollup (0.38.0-1) experimental; urgency=low
+
+  * Initial release (Closes: #849292)
+
+ -- Pirate Praveen <praveen@debian.org>  Tue, 27 Dec 2016 11:57:02 +0530

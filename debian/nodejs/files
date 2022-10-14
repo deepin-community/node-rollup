@@ -1,0 +1,4 @@
+browser/**/*.js
+cli/**/*.js
+dist
+src/**/*.js

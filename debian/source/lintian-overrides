@@ -1,0 +1,5 @@
+# False positives
+# test data
+source-is-missing test/* *
+source-contains-prebuilt-javascript-object test/* *
+very-long-line-length-in-source-file test/* *

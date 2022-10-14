@@ -1,0 +1,15 @@
+Description: workaround "'this' keyword is equivalent to 'undefined'" failure
+Author: Xavier Guimard <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2021-01-29
+
+--- a/rollup.config.js
++++ b/rollup.config.js
+@@ -37,6 +37,7 @@
+ */`;
+ 
+ const onwarn = warning => {
++    if (warning.code === 'THIS_IS_UNDEFINED') return;
+ 	// eslint-disable-next-line no-console
+ 	console.error(
+ 		'Building Rollup produced warnings that need to be resolved. ' +
