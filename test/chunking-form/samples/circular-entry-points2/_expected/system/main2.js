@@ -1,13 +1,13 @@
-System.register([], function (exports) {
+System.register([], (function (exports) {
   'use strict';
   return {
-    execute: function () {
+    execute: (function () {
 
-      class C$1 {
+      let C$1 = class C {
         fn (num) {
           console.log(num - p);
         }
-      }
+      };
 
       var p$1 = exports('p', 43);
 
@@ -23,6 +23,6 @@ System.register([], function (exports) {
 
       new C().fn(p);
 
-    }
+    })
   };
-});
+}));

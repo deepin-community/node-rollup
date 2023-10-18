@@ -29,6 +29,7 @@ import FunctionDeclaration from './FunctionDeclaration';
 import FunctionExpression from './FunctionExpression';
 import Identifier from './Identifier';
 import IfStatement from './IfStatement';
+import ImportAttribute from './ImportAttribute';
 import ImportDeclaration from './ImportDeclaration';
 import ImportDefaultSpecifier from './ImportDefaultSpecifier';
 import ImportExpression from './ImportExpression';
@@ -50,8 +51,8 @@ import PropertyDefinition from './PropertyDefinition';
 import RestElement from './RestElement';
 import ReturnStatement from './ReturnStatement';
 import SequenceExpression from './SequenceExpression';
-import { NodeBase } from './shared/Node';
 import SpreadElement from './SpreadElement';
+import StaticBlock from './StaticBlock';
 import Super from './Super';
 import SwitchCase from './SwitchCase';
 import SwitchStatement from './SwitchStatement';
@@ -68,6 +69,7 @@ import VariableDeclaration from './VariableDeclaration';
 import VariableDeclarator from './VariableDeclarator';
 import WhileStatement from './WhileStatement';
 import YieldExpression from './YieldExpression';
+import type { NodeBase } from './shared/Node';
 
 export const nodeConstructors: {
 	[name: string]: typeof NodeBase;
@@ -103,6 +105,7 @@ export const nodeConstructors: {
 	FunctionExpression,
 	Identifier,
 	IfStatement,
+	ImportAttribute,
 	ImportDeclaration,
 	ImportDefaultSpecifier,
 	ImportExpression,
@@ -125,6 +128,7 @@ export const nodeConstructors: {
 	ReturnStatement,
 	SequenceExpression,
 	SpreadElement,
+	StaticBlock,
 	Super,
 	SwitchCase,
 	SwitchStatement,

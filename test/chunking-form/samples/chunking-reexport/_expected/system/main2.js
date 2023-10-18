@@ -1,13 +1,13 @@
-System.register(['./generated-dep.js', 'external'], function (exports) {
+System.register(['./main1.js', 'external'], (function (exports) {
 	'use strict';
 	return {
-		setters: [function () {}, function (module) {
+		setters: [null, function (module) {
 			exports('dep', module.asdf);
 		}],
-		execute: function () {
+		execute: (function () {
 
 
 
-		}
+		})
 	};
-});
+}));

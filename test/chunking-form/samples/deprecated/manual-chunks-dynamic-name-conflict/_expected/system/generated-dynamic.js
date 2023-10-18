@@ -1,7 +1,7 @@
-System.register([], function (exports) {
+System.register([], (function (exports) {
 	'use strict';
 	return {
-		execute: function () {
+		execute: (function () {
 
 			console.log('dynamic2');
 
@@ -19,11 +19,11 @@ System.register([], function (exports) {
 
 			var dynamic1 = /*#__PURE__*/Object.freeze({
 				__proto__: null,
-				DYNAMIC_B: DYNAMIC_A,
-				DYNAMIC_A: DYNAMIC_B
+				DYNAMIC_A: DYNAMIC_B,
+				DYNAMIC_B: DYNAMIC_A
 			});
 			exports('a', dynamic1);
 
-		}
+		})
 	};
-});
+}));

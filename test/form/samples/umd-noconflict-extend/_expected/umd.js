@@ -6,8 +6,8 @@
 		var exports = global.FooBar = global.FooBar || {};
 		factory(exports);
 		exports.noConflict = function () { global.FooBar = current; return exports; };
-	}()));
-}(this, (function (exports) { 'use strict';
+	})());
+})(this, (function (exports) { 'use strict';
 
 	function doThings() {
 		console.log( 'doing things...' );
@@ -21,6 +21,4 @@
 	exports.number = number;
 	exports.setting = setting;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
+}));

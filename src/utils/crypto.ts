@@ -1,3 +1,3 @@
-import { createHash as cryptoCreateHash } from 'crypto';
+import { createHash as cryptoCreateHash, type Hash } from 'node:crypto';
 
-export const createHash = () => cryptoCreateHash('sha256');
+export const createHash = (): Hash => cryptoCreateHash('sha256');

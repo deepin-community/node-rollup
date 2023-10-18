@@ -6,8 +6,8 @@
 		var exports = (global.my = global.my || {}, global.my.name = global.my.name || {}, global.my.name.spaced = global.my.name.spaced || {}, global.my.name.spaced.module = {});
 		factory(exports);
 		exports.noConflict = function () { global.my.name.spaced.module = current; return exports; };
-	}()));
-}(this, (function (exports) { 'use strict';
+	})());
+})(this, (function (exports) { 'use strict';
 
 	function doThings() {
 		console.log( 'doing things...' );
@@ -21,6 +21,4 @@
 	exports.number = number;
 	exports.setting = setting;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
+}));

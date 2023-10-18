@@ -1,48 +1,72 @@
-import { NormalizedTreeshakingOptions } from '../../rollup/types';
-import { CallOptions } from '../CallOptions';
-import { HasEffectsContext } from '../ExecutionContext';
-import { EMPTY_PATH, ObjectPath, UNKNOWN_PATH } from '../utils/PathTracker';
-import * as NodeType from './NodeType';
-import { Annotation, ExpressionNode, NodeBase } from './shared/Node';
+import type MagicString from 'magic-string';
+import { renderCallArguments } from '../../utils/renderCallArguments';
+import type { RenderOptions } from '../../utils/renderHelpers';
+import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type { NodeInteraction, NodeInteractionCalled } from '../NodeInteractions';
+import { INTERACTION_ACCESSED, INTERACTION_CALLED } from '../NodeInteractions';
+import { EMPTY_PATH, type ObjectPath, SHARED_RECURSION_TRACKER } from '../utils/PathTracker';
+import type * as NodeType from './NodeType';
+import type { ExpressionNode, IncludeChildren } from './shared/Node';
+import { NodeBase } from './shared/Node';
 
 export default class NewExpression extends NodeBase {
-	arguments!: ExpressionNode[];
-	callee!: ExpressionNode;
-	type!: NodeType.tNewExpression;
-
-	private callOptions!: CallOptions;
-
-	bind() {
-		super.bind();
-		for (const argument of this.arguments) {
-			// This will make sure all properties of parameters behave as "unknown"
-			argument.deoptimizePath(UNKNOWN_PATH);
-		}
-	}
+	declare arguments: ExpressionNode[];
+	declare callee: ExpressionNode;
+	declare type: NodeType.tNewExpression;
+	private declare interaction: NodeInteractionCalled;
 
 	hasEffects(context: HasEffectsContext): boolean {
-		for (const argument of this.arguments) {
-			if (argument.hasEffects(context)) return true;
+		try {
+			for (const argument of this.arguments) {
+				if (argument.hasEffects(context)) return true;
+			}
+			if (this.annotationPure) {
+				return false;
+			}
+			return (
+				this.callee.hasEffects(context) ||
+				this.callee.hasEffectsOnInteractionAtPath(EMPTY_PATH, this.interaction, context)
+			);
+		} finally {
+			if (!this.deoptimized) this.applyDeoptimizations();
 		}
-		if (
-			(this.context.options.treeshake as NormalizedTreeshakingOptions).annotations &&
-			this.annotations?.some((a: Annotation) => a.pure)
-		)
-			return false;
-		return (
-			this.callee.hasEffects(context) ||
-			this.callee.hasEffectsWhenCalledAtPath(EMPTY_PATH, this.callOptions, context)
-		);
 	}
 
-	hasEffectsWhenAccessedAtPath(path: ObjectPath) {
-		return path.length > 1;
+	hasEffectsOnInteractionAtPath(path: ObjectPath, { type }: NodeInteraction): boolean {
+		return path.length > 0 || type !== INTERACTION_ACCESSED;
 	}
 
-	initialise() {
-		this.callOptions = {
-			args: this.arguments,
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+		if (!this.deoptimized) this.applyDeoptimizations();
+		if (includeChildrenRecursively) {
+			super.include(context, includeChildrenRecursively);
+		} else {
+			this.included = true;
+			this.callee.include(context, false);
+		}
+		this.callee.includeCallArguments(context, this.arguments);
+	}
+
+	initialise(): void {
+		this.interaction = {
+			args: [null, ...this.arguments],
+			type: INTERACTION_CALLED,
 			withNew: true
 		};
+	}
+
+	render(code: MagicString, options: RenderOptions) {
+		this.callee.render(code, options);
+		renderCallArguments(code, options, this);
+	}
+
+	protected applyDeoptimizations(): void {
+		this.deoptimized = true;
+		this.callee.deoptimizeArgumentsOnInteractionAtPath(
+			this.interaction,
+			EMPTY_PATH,
+			SHARED_RECURSION_TRACKER
+		);
+		this.context.requestTreeshakingPass();
 	}
 }

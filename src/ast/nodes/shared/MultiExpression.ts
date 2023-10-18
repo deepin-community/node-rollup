@@ -1,18 +1,14 @@
-import { CallOptions } from '../../CallOptions';
-import { DeoptimizableEntity } from '../../DeoptimizableEntity';
-import { HasEffectsContext, InclusionContext } from '../../ExecutionContext';
-import { ObjectPath, PathTracker } from '../../utils/PathTracker';
-import { LiteralValueOrUnknown, UnknownValue } from '../../values';
+import type { DeoptimizableEntity } from '../../DeoptimizableEntity';
+import type { HasEffectsContext } from '../../ExecutionContext';
+import type { NodeInteraction, NodeInteractionCalled } from '../../NodeInteractions';
+import type { ObjectPath, PathTracker } from '../../utils/PathTracker';
 import { ExpressionEntity } from './Expression';
-import { IncludeChildren } from './Node';
 
-export class MultiExpression implements ExpressionEntity {
+export class MultiExpression extends ExpressionEntity {
 	included = false;
 
-	private expressions: ExpressionEntity[];
-
-	constructor(expressions: ExpressionEntity[]) {
-		this.expressions = expressions;
+	constructor(private expressions: readonly ExpressionEntity[]) {
+		super();
 	}
 
 	deoptimizePath(path: ObjectPath): void {
@@ -21,56 +17,36 @@ export class MultiExpression implements ExpressionEntity {
 		}
 	}
 
-	getLiteralValueAtPath(): LiteralValueOrUnknown {
-		return UnknownValue;
-	}
-
 	getReturnExpressionWhenCalledAtPath(
 		path: ObjectPath,
+		interaction: NodeInteractionCalled,
 		recursionTracker: PathTracker,
 		origin: DeoptimizableEntity
-	): ExpressionEntity {
-		return new MultiExpression(
-			this.expressions.map(expression =>
-				expression.getReturnExpressionWhenCalledAtPath(path, recursionTracker, origin)
-			)
-		);
+	): [expression: ExpressionEntity, isPure: boolean] {
+		return [
+			new MultiExpression(
+				this.expressions.map(
+					expression =>
+						expression.getReturnExpressionWhenCalledAtPath(
+							path,
+							interaction,
+							recursionTracker,
+							origin
+						)[0]
+				)
+			),
+			false
+		];
 	}
 
-	hasEffectsWhenAccessedAtPath(path: ObjectPath, context: HasEffectsContext): boolean {
-		for (const expression of this.expressions) {
-			if (expression.hasEffectsWhenAccessedAtPath(path, context)) return true;
-		}
-		return false;
-	}
-
-	hasEffectsWhenAssignedAtPath(path: ObjectPath, context: HasEffectsContext): boolean {
-		for (const expression of this.expressions) {
-			if (expression.hasEffectsWhenAssignedAtPath(path, context)) return true;
-		}
-		return false;
-	}
-
-	hasEffectsWhenCalledAtPath(
+	hasEffectsOnInteractionAtPath(
 		path: ObjectPath,
-		callOptions: CallOptions,
+		interaction: NodeInteraction,
 		context: HasEffectsContext
 	): boolean {
 		for (const expression of this.expressions) {
-			if (expression.hasEffectsWhenCalledAtPath(path, callOptions, context)) return true;
+			if (expression.hasEffectsOnInteractionAtPath(path, interaction, context)) return true;
 		}
 		return false;
 	}
-
-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
-		// This is only relevant to include values that do not have an AST representation,
-		// such as UnknownArrayExpression. Thus we only need to include them once.
-		for (const expression of this.expressions) {
-			if (!expression.included) {
-				expression.include(context, includeChildrenRecursively);
-			}
-		}
-	}
-
-	includeCallArguments(): void {}
 }

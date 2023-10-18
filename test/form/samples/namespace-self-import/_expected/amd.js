@@ -1,4 +1,4 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
 	var self = /*#__PURE__*/Object.freeze({
 		__proto__: null,
@@ -11,6 +11,4 @@ define(['exports'], function (exports) { 'use strict';
 
 	exports.p = p;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

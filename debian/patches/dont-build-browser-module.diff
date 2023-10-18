@@ -1,15 +1,84 @@
 Description: don't build browser module
-Author: Xavier Guimard <yadd@debian.org>
+Author: Yadd <yadd@debian.org>
 Forwarded: not-needed
-Last-Update: 2021-01-29
+Last-Update: 2023-08-15
 
---- a/rollup.config.js
-+++ b/rollup.config.js
-@@ -162,5 +162,6 @@
- 		]
+--- a/rollup.config.ts
++++ b/rollup.config.ts
+@@ -4,7 +4,6 @@
+ import json from '@rollup/plugin-json';
+ import { nodeResolve } from '@rollup/plugin-node-resolve';
+ import replace from '@rollup/plugin-replace';
+-import terser from '@rollup/plugin-terser';
+ import typescript from '@rollup/plugin-typescript';
+ import type { Plugin, RollupOptions, WarningHandlerWithDefault } from 'rollup';
+ import { string } from 'rollup-plugin-string';
+@@ -17,7 +16,6 @@
+ import { fsEventsReplacement } from './build-plugins/fs-events-replacement';
+ import getLicenseHandler from './build-plugins/generate-license-file';
+ import getBanner from './build-plugins/get-banner';
+-import replaceBrowserModules from './build-plugins/replace-browser-modules';
+ 
+ const resOpt = {
+   modulePaths: ['./node_modules', 'debian/build_modules'], preferBuiltins: true,
+@@ -56,7 +54,7 @@
+ export default async function (
+ 	command: Record<string, unknown>
+ ): Promise<RollupOptions | RollupOptions[]> {
+-	const { collectLicenses, writeLicense } = getLicenseHandler(
++	const { collectLicenses } = getLicenseHandler(
+ 		fileURLToPath(new URL('.', import.meta.url))
+ 	);
+ 
+@@ -113,50 +111,5 @@
+ 		plugins: [...nodePlugins, emitModulePackageFile(), collectLicenses()]
  	};
  
+-
+-	const browserBuilds: RollupOptions = {
+-		input: 'src/browser-entry.ts',
+-		onwarn,
+-		output: [
+-			{
+-				banner: getBanner,
+-				file: 'browser/dist/rollup.browser.js',
+-				format: 'umd',
+-				name: 'rollup',
+-				plugins: [copyBrowserTypes()],
+-				sourcemap: true
+-			},
+-			{
+-				banner: getBanner,
+-				file: 'browser/dist/es/rollup.browser.js',
+-				format: 'es',
+-				plugins: [emitModulePackageFile()]
+-			}
+-		],
+-		plugins: [
+-			replaceBrowserModules(),
+-			alias(moduleAliases),
+-			nodeResolve({ ...resOpt, browser: true }),
+-			json(),
+-			commonjs(),
+-			typescript(),
+-			terser({ module: true, output: { comments: 'some' } }),
+-			collectLicensesBrowser(),
+-			writeLicenseBrowser(),
+-			cleanBeforeWrite('browser/dist'),
+-			{
+-				closeBundle() {
+-					// On CI, macOS runs sometimes do not close properly. This is a hack
+-					// to fix this until the problem is understood.
+-					console.log('Force quit.');
+-					setTimeout(() => process.exit(0));
+-				},
+-				name: 'force-close'
+-			}
+-		],
+-		strictDeprecations: true,
+-		treeshake
+-	};
+-
 -	return [commonJSBuild, esmBuild, browserBuilds];
-+    //return [commonJSBuild, esmBuild, browserBuilds];
 +	return [commonJSBuild, esmBuild];
- };
+ }

@@ -1,30 +1,15 @@
-import { CallOptions } from '../CallOptions';
-import { HasEffectsContext } from '../ExecutionContext';
-import { EMPTY_PATH, ObjectPath } from '../utils/PathTracker';
-import FunctionExpression from './FunctionExpression';
-import * as NodeType from './NodeType';
-import PrivateIdentifier from './PrivateIdentifier';
-import { ExpressionNode, NodeBase } from './shared/Node';
+import type FunctionExpression from './FunctionExpression';
+import type * as NodeType from './NodeType';
+import type PrivateIdentifier from './PrivateIdentifier';
+import MethodBase from './shared/MethodBase';
+import type { ExpressionNode } from './shared/Node';
 
-export default class MethodDefinition extends NodeBase {
-	computed!: boolean;
-	key!: ExpressionNode | PrivateIdentifier;
-	kind!: 'constructor' | 'method' | 'get' | 'set';
-	static!: boolean;
-	type!: NodeType.tMethodDefinition;
-	value!: FunctionExpression;
+export default class MethodDefinition extends MethodBase {
+	declare key: ExpressionNode | PrivateIdentifier;
+	declare kind: 'constructor' | 'method' | 'get' | 'set';
+	declare static: boolean;
+	declare type: NodeType.tMethodDefinition;
+	declare value: FunctionExpression;
 
-	hasEffects(context: HasEffectsContext) {
-		return this.key.hasEffects(context);
-	}
-
-	hasEffectsWhenCalledAtPath(
-		path: ObjectPath,
-		callOptions: CallOptions,
-		context: HasEffectsContext
-	) {
-		return (
-			path.length > 0 || this.value.hasEffectsWhenCalledAtPath(EMPTY_PATH, callOptions, context)
-		);
-	}
+	protected applyDeoptimizations() {}
 }

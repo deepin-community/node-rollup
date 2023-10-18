@@ -1,4 +1,4 @@
-System.register(['./_virtual/_one.js', './_virtual/_One2.js', './_virtual/_One1.js'], function () {
+System.register(['./_virtual/_one.js', './_virtual/_One2.js', './_virtual/_One1.js'], (function () {
 	'use strict';
 	var a, b, c;
 	return {
@@ -9,10 +9,10 @@ System.register(['./_virtual/_one.js', './_virtual/_One2.js', './_virtual/_One1.
 		}, function (module) {
 			c = module.default;
 		}],
-		execute: function () {
+		execute: (function () {
 
 			window.APP = { a, b, c };
 
-		}
+		})
 	};
-});
+}));

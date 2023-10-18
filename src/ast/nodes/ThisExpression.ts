@@ -1,46 +1,63 @@
-import MagicString from 'magic-string';
-import { HasEffectsContext } from '../ExecutionContext';
+import type MagicString from 'magic-string';
+import { LOGLEVEL_WARN } from '../../utils/logging';
+import { logThisIsUndefined } from '../../utils/logs';
+import type { HasEffectsContext } from '../ExecutionContext';
+import type { NodeInteraction } from '../NodeInteractions';
+import { INTERACTION_ACCESSED } from '../NodeInteractions';
 import ModuleScope from '../scopes/ModuleScope';
-import { ObjectPath } from '../utils/PathTracker';
-import ThisVariable from '../variables/ThisVariable';
-import * as NodeType from './NodeType';
+import type { ObjectPath, PathTracker } from '../utils/PathTracker';
+import type Variable from '../variables/Variable';
+import type * as NodeType from './NodeType';
 import { NodeBase } from './shared/Node';
 
 export default class ThisExpression extends NodeBase {
-	type!: NodeType.tThisExpression;
+	declare type: NodeType.tThisExpression;
+	declare variable: Variable;
+	private declare alias: string | null;
 
-	variable!: ThisVariable;
-	private alias!: string | null;
-
-	bind() {
-		super.bind();
-		this.variable = this.scope.findVariable('this') as ThisVariable;
+	bind(): void {
+		this.variable = this.scope.findVariable('this');
 	}
 
-	hasEffectsWhenAccessedAtPath(path: ObjectPath, context: HasEffectsContext): boolean {
-		return path.length > 0 && this.variable.hasEffectsWhenAccessedAtPath(path, context);
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
+		path: ObjectPath,
+		recursionTracker: PathTracker
+	): void {
+		this.variable.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
 	}
 
-	hasEffectsWhenAssignedAtPath(path: ObjectPath, context: HasEffectsContext): boolean {
-		return this.variable.hasEffectsWhenAssignedAtPath(path, context);
+	deoptimizePath(path: ObjectPath): void {
+		this.variable.deoptimizePath(path);
 	}
 
-	initialise() {
-		this.alias =
-			this.scope.findLexicalBoundary() instanceof ModuleScope ? this.context.moduleContext : null;
-		if (this.alias === 'undefined') {
-			this.context.warn(
-				{
-					code: 'THIS_IS_UNDEFINED',
-					message: `The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten`,
-					url: `https://rollupjs.org/guide/en/#error-this-is-undefined`
-				},
-				this.start
-			);
+	hasEffectsOnInteractionAtPath(
+		path: ObjectPath,
+		interaction: NodeInteraction,
+		context: HasEffectsContext
+	): boolean {
+		if (path.length === 0) {
+			return interaction.type !== INTERACTION_ACCESSED;
+		}
+		return this.variable.hasEffectsOnInteractionAtPath(path, interaction, context);
+	}
+
+	include(): void {
+		if (!this.included) {
+			this.included = true;
+			this.context.includeVariableInModule(this.variable);
 		}
 	}
 
-	render(code: MagicString) {
+	initialise(): void {
+		this.alias =
+			this.scope.findLexicalBoundary() instanceof ModuleScope ? this.context.moduleContext : null;
+		if (this.alias === 'undefined') {
+			this.context.log(LOGLEVEL_WARN, logThisIsUndefined(), this.start);
+		}
+	}
+
+	render(code: MagicString): void {
 		if (this.alias !== null) {
 			code.overwrite(this.start, this.end, this.alias, {
 				contentOnly: false,

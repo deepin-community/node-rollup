@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2016-2020 Mickael Jeanroy
+ * Copyright (c) 2016-2022 Mickael Jeanroy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +25,17 @@
 
 "use strict";
 
-function _interopDefault(ex) {
-  return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
-}
-
-var _ = _interopDefault(require("lodash"));
-var fs = _interopDefault(require("fs"));
-var path = _interopDefault(require("path"));
-var mkdirp = _interopDefault(require("mkdirp"));
-var moment = _interopDefault(require("moment"));
-var MagicString = _interopDefault(require("magic-string"));
-var glob = _interopDefault(require("glob"));
-var packageNameRegex = _interopDefault(require("package-name-regex"));
-var commenting = _interopDefault(require("commenting"));
-var spdxExpressionValidate = _interopDefault(
-  require("spdx-expression-validate")
-);
-var spdxSatisfies = _interopDefault(require("spdx-satisfies"));
+var _ = require("lodash");
+var fs = require("fs");
+var path = require("path");
+var mkdirp = require("mkdirp");
+var moment = require("moment");
+var MagicString = require("magic-string");
+var glob = require("glob");
+var packageNameRegex = require("package-name-regex");
+var commenting = require("commenting");
+var spdxExpressionValidate = require("spdx-expression-validate");
+var spdxSatisfies = require("spdx-satisfies");
 
 const EOL = "\n";
 
@@ -51,7 +45,6 @@ const EOL = "\n";
  * - An email (optional).
  * - An URL (optional).
  */
-
 class Person {
   /**
    * Create the person.
@@ -66,10 +59,8 @@ class Person {
     if (_.isString(person)) {
       const o = {};
       let current = "name";
-
       for (let i = 0, size = person.length; i < size; ++i) {
         const character = person.charAt(i);
-
         if (character === "<") {
           current = "email";
         } else if (character === "(") {
@@ -78,40 +69,32 @@ class Person {
           o[current] = (o[current] || "") + character;
         }
       }
-
       _.forEach(["name", "email", "url"], (prop) => {
         if (_.has(o, prop)) {
           o[prop] = _.trim(o[prop]);
         }
       });
-
       person = o;
     }
-
     this.name = person.name || null;
     this.email = person.email || null;
     this.url = person.url || null;
   }
+
   /**
    * Serialize the person to a string with the following format:
    *   NAME <EMAIL> (URL)
    *
-   * @param {string} prefix Optional prefix prepended to the output string.
-   * @param {string} suffix Optional suffix appended to the output string.
    * @return {string} The person as a string.
    */
-
   text() {
     let text = `${this.name}`;
-
     if (this.email) {
       text += ` <${this.email}>`;
     }
-
     if (this.url) {
       text += ` (${this.url})`;
     }
-
     return text;
   }
 }
@@ -119,7 +102,6 @@ class Person {
 /**
  * Dependency structure.
  */
-
 class Dependency {
   /**
    * Create new dependency from package description.
@@ -136,16 +118,19 @@ class Dependency {
     this.homepage = pkg.homepage || null;
     this.private = pkg.private || false;
     this.license = pkg.license || null;
-    this.licenseText = pkg.licenseText || null; // Parse the author field to get an object.
+    this.licenseText = pkg.licenseText || null;
 
-    this.author = pkg.author ? new Person(pkg.author) : null; // Parse the contributor array.
+    // Parse the author field to get an object.
+    this.author = pkg.author ? new Person(pkg.author) : null;
 
+    // Parse the contributor array.
     this.contributors = _.map(
       _.castArray(pkg.contributors || []),
       (contributor) => new Person(contributor)
-    ); // The `licenses` field is deprecated but may be used in some packages.
-    // Map it to a standard license field.
+    );
 
+    // The `licenses` field is deprecated but may be used in some packages.
+    // Map it to a standard license field.
     if (!this.license && pkg.licenses) {
       // Map it to a valid license field.
       // See: https://docs.npmjs.com/files/package.json#license
@@ -155,53 +140,44 @@ class Dependency {
         .value()})`;
     }
   }
+
   /**
    * Serialize dependency as a string.
    *
    * @return {string} The dependency correctly formatted.
    */
-
   text() {
     const lines = [];
     lines.push(`Name: ${this.name}`);
     lines.push(`Version: ${this.version}`);
     lines.push(`License: ${this.license}`);
     lines.push(`Private: ${this.private}`);
-
     if (this.description) {
       lines.push(`Description: ${this.description || false}`);
     }
-
     if (this.repository) {
       lines.push(`Repository: ${this.repository.url}`);
     }
-
     if (this.homepage) {
       lines.push(`Homepage: ${this.homepage}`);
     }
-
     if (this.author) {
       lines.push(`Author: ${this.author.text()}`);
     }
-
     if (!_.isEmpty(this.contributors)) {
       lines.push(`Contributors:`);
-
       const allContributors = _.chain(this.contributors)
         .map((contributor) => contributor.text())
         .map((line) => `  ${line}`)
         .value();
-
       lines.push(...allContributors);
     }
-
     if (this.licenseText) {
       lines.push("License Copyright:");
       lines.push("===");
       lines.push("");
       lines.push(this.licenseText);
     }
-
     return lines.join(EOL);
   }
 }
@@ -213,12 +189,10 @@ class Dependency {
  * @param {Object} commentStyle The comment style setting.
  * @return {string} Block comment.
  */
-
 function generateBlockComment(text, commentStyle) {
   const options = {
     extension: ".js",
   };
-
   if (commentStyle) {
     options.style = new commenting.Style(
       commentStyle.body,
@@ -226,7 +200,6 @@ function generateBlockComment(text, commentStyle) {
       commentStyle.end
     );
   }
-
   return commenting(text.trim(), options);
 }
 
@@ -242,67 +215,66 @@ const PLUGIN_NAME = "rollup-plugin-license";
  * @param {*} value The value to check.
  * @return {boolean} `true` if `value` is a string, `false` otherwise.
  */
-
 function isString(value) {
   return _.isString(value);
 }
+
 /**
  * Check if given value is a `boolean`.
  *
  * @param {*} value The value to check.
  * @return {boolean} `true` if `value` is a boolean, `false` otherwise.
  */
-
 function isBoolean(value) {
   return _.isBoolean(value);
 }
+
 /**
  * Check if given value is a `function`.
  *
  * @param {*} value The value to check.
  * @return {boolean} `true` if `value` is a function, `false` otherwise.
  */
-
 function isFunction(value) {
   return _.isFunction(value);
 }
+
 /**
  * Check if given value is a `number`.
  *
  * @param {*} value The value to check.
  * @return {boolean} `true` if `value` is a number, `false` otherwise.
  */
-
 function isNumber(value) {
   return _.isNumber(value);
 }
+
 /**
  * Check if given value is `null` or `undefined`.
  *
  * @param {*} value The value to check.
  * @return {boolean} `true` if `value` is `null` or `undefined`, `false` otherwise.
  */
-
 function isNil(value) {
   return _.isNil(value);
 }
+
 /**
  * Check if given value is an `array`.
  *
  * @param {*} value The value to check.
  * @return {boolean} `true` if `value` is an array, `false` otherwise.
  */
-
 function isArray(value) {
   return _.isArray(value);
 }
+
 /**
  * Check if given value is an plain object.
  *
  * @param {*} value The value to check.
  * @return {boolean} `true` if `value` is a plain object, `false` otherwise.
  */
-
 function isObject(value) {
   return (
     _.isObject(value) &&
@@ -313,7 +285,6 @@ function isObject(value) {
     !isNumber(value)
   );
 }
-
 const validators = {
   string() {
     return {
@@ -323,7 +294,6 @@ const validators = {
       test: isString,
     };
   },
-
   boolean() {
     return {
       type: "object.type.boolean",
@@ -332,7 +302,6 @@ const validators = {
       test: isBoolean,
     };
   },
-
   func() {
     return {
       type: "object.type.func",
@@ -341,7 +310,6 @@ const validators = {
       test: isFunction,
     };
   },
-
   object(schema) {
     return {
       type: "object.type.object",
@@ -350,7 +318,6 @@ const validators = {
       test: isObject,
     };
   },
-
   array(schema) {
     return {
       type: "object.type.array",
@@ -359,7 +326,6 @@ const validators = {
       test: isArray,
     };
   },
-
   any() {
     return {
       type: "object.any",
@@ -376,10 +342,8 @@ const validators = {
  * @param {Array<string|number>} paths List of paths.
  * @return {string} The full path.
  */
-
 function formatPath(paths) {
   let str = "";
-
   _.forEach(paths, (p) => {
     if (_.isNumber(p)) {
       str += `[${p}]`;
@@ -389,7 +353,6 @@ function formatPath(paths) {
       str += `.${p}`;
     }
   });
-
   return str;
 }
 
@@ -402,14 +365,13 @@ function formatPath(paths) {
  * @param {Array<string|number>} path The path being validated.
  * @returns {Array<Object>} Found errors.
  */
-
 function doItemValidation(value, schema, path) {
   const validators = _.castArray(schema);
-
   const matchedValidators = _.filter(validators, (validator) =>
     validator.test(value)
-  ); // No one matched, we can stop here and return an error with a proper message.
+  );
 
+  // No one matched, we can stop here and return an error with a proper message.
   if (_.isEmpty(matchedValidators)) {
     return [
       {
@@ -420,14 +382,16 @@ function doItemValidation(value, schema, path) {
         ).join(" OR "),
       },
     ];
-  } // Run "sub-validators"
+  }
 
+  // Run "sub-validators"
   return _.chain(matchedValidators)
     .filter((validator) => validator.schema)
     .map((validator) => validate(value, validator.schema, path))
     .flatten()
     .value();
 }
+
 /**
  * Validate object against given schema.
  * Note that `null` or `undefined` is allowed and do not produce an error.
@@ -437,17 +401,13 @@ function doItemValidation(value, schema, path) {
  * @param {Array<string|number>} current The current path being validated.
  * @returns {Array<Object>} Found errors.
  */
-
 function validateObject(obj, schema, current) {
   const errors = [];
-
   _.forEach(obj, (value, k) => {
     if (_.isNil(value)) {
       return;
     }
-
     const path = [...current, k];
-
     if (!_.has(schema, k)) {
       errors.push({
         type: "object.allowUnknown",
@@ -457,9 +417,9 @@ function validateObject(obj, schema, current) {
       errors.push(...doItemValidation(value, schema[k], path));
     }
   });
-
   return errors;
 }
+
 /**
  * Validate element of an array.
  *
@@ -472,10 +432,8 @@ function validateObject(obj, schema, current) {
  * @param {Array<string|number>} current The path being validated.
  * @return {Array<Object>} Found errors.
  */
-
 function validateArrayItem(item, idx, schema, current) {
   const path = [...current, idx];
-
   if (_.isUndefined(item)) {
     return [
       {
@@ -484,7 +442,6 @@ function validateArrayItem(item, idx, schema, current) {
       },
     ];
   }
-
   if (_.isNull(item)) {
     return [
       {
@@ -493,9 +450,9 @@ function validateArrayItem(item, idx, schema, current) {
       },
     ];
   }
-
   return doItemValidation(item, schema, path);
 }
+
 /**
  * Validate all elements of given array against given schema (or array of schemas).
  *
@@ -504,13 +461,13 @@ function validateArrayItem(item, idx, schema, current) {
  * @param {string} current The path being validated.
  * @return {Array<Object>} Found errors.
  */
-
 function validateArray(array, schema, current) {
   return _.chain(array)
     .map((item, idx) => validateArrayItem(item, idx, schema, current))
     .flatten()
     .value();
 }
+
 /**
  * Validate given object against given schema.
  *
@@ -526,12 +483,12 @@ function validateArray(array, schema, current) {
  * @param {Array<string>} current The current path context of given object, useful to validate against subobject.
  * @return {Array<Object>} Found errors.
  */
-
 function validate(obj, schema, current = []) {
   return _.isArray(obj)
     ? validateArray(obj, schema, current)
     : validateObject(obj, schema, current);
 }
+
 /**
  * Validate given object against given schema.
  *
@@ -540,7 +497,6 @@ function validate(obj, schema, current = []) {
  * @param {Array<string>} current The current path context of given object, useful to validate against subobject.
  * @return {Array<Object>} Found errors.
  */
-
 function validateSchema(obj, schema, current) {
   return validate(obj, schema, current);
 }
@@ -549,7 +505,6 @@ function validateSchema(obj, schema, current) {
  * The option object schema.
  * @type {Object}
  */
-
 const SCHEMA = {
   sourcemap: [validators.string(), validators.boolean()],
   debug: validators.boolean(),
@@ -604,42 +559,39 @@ const SCHEMA = {
     }),
   ],
 };
+
 /**
  * Print warning message to the console.
  *
  * @param {string} msg Message to log.
  * @return {void}
  */
-
 function warn(msg) {
   console.warn(`[${PLUGIN_NAME}] -- ${msg}`);
 }
+
 /**
  * Validate given option object.
  *
  * @param {Object} options Option object.
  * @return {Array} An array of all errors.
  */
-
 function doValidation(options) {
   return validateSchema(options, SCHEMA);
 }
+
 /**
  * Validate option object according to pre-defined schema.
  *
  * @param {Object} options Option object.
  * @return {void}
  */
-
 function validateOptions(options) {
   const errors = doValidation(options);
-
   if (_.isEmpty(errors)) {
     return;
   }
-
   const messages = [];
-
   _.forEach(errors, (e) => {
     if (e.type === "object.allowUnknown") {
       warn(
@@ -651,7 +603,6 @@ function validateOptions(options) {
       messages.push(e.message);
     }
   });
-
   if (!_.isEmpty(messages)) {
     throw new Error(
       `[${PLUGIN_NAME}] -- Error during validation of option object: ${messages.join(
@@ -660,13 +611,13 @@ function validateOptions(options) {
     );
   }
 }
+
 /**
  * Normalize and validate option object.
  *
  * @param {Object} options Option object to validate.
  * @return {Object} New normalized options.
  */
-
 function licensePluginOptions(options) {
   validateOptions(options);
   return options;
@@ -680,35 +631,34 @@ function licensePluginOptions(options) {
  * @param {string} license The license name.
  * @return {string} The normalized license name.
  */
-
 function normalizeLicense(license) {
   if (!license) {
     return "UNLICENSED";
   }
-
   return license.trim();
 }
+
 /**
  * Check if given license name is the `UNLICENSED` value.
  *
  * @param {string} license The license to check.
  * @return {boolean} `true` if `license` is the UNLICENSED one, `false` otherwise.
  */
-
 function checkUnlicensed(license) {
   return license.toUpperCase() === "UNLICENSED";
 }
+
 /**
  * Check if dependency is unlicensed, or not.
  *
  * @param {Object} dependency The dependency.
  * @return {boolean} `true` if dependency does not have any license, `false` otherwise.
  */
-
 function isUnlicensed(dependency) {
   const license = normalizeLicense(dependency.license);
   return checkUnlicensed(license);
 }
+
 /**
  * Check if license dependency is valid according to given SPDX validator pattern.
  *
@@ -716,17 +666,13 @@ function isUnlicensed(dependency) {
  * @param {string} allow The validator as a SPDX pattern.
  * @return {boolean} `true` if dependency license is valid, `false` otherwise.
  */
-
 function isValid(dependency, allow) {
   const license = normalizeLicense(dependency.license);
-
   if (checkUnlicensed(license)) {
     return false;
   }
-
   return spdxExpressionValidate(license) && spdxSatisfies(license, allow);
 }
-
 const licenseValidator = {
   isUnlicensed,
   isValid,
@@ -742,7 +688,6 @@ const licenseValidator = {
  *
  * @type {Object<string, Object>}
  */
-
 const COMMENT_STYLES = {
   regular: {
     start: "/**",
@@ -761,6 +706,7 @@ const COMMENT_STYLES = {
   },
   none: null,
 };
+
 /**
  * Compute the comment style to use for given text:
  * - If text starts with a block comment, nothing is done (i.e use `none`).
@@ -769,18 +715,17 @@ const COMMENT_STYLES = {
  * @param {string} text The text to comment.
  * @return {string} The comment style name.
  */
-
 function computeDefaultCommentStyle(text) {
   const trimmedText = text.trim();
   const start = trimmedText.slice(0, 3);
   const startWithComment = start === "/**" || start === "/*!";
   return startWithComment ? "none" : "regular";
 }
+
 /**
  * Rollup Plugin.
  * @class
  */
-
 class LicensePlugin {
   /**
    * Initialize plugin.
@@ -789,29 +734,33 @@ class LicensePlugin {
    */
   constructor(options = {}) {
     // Plugin name, used by rollup.
-    this.name = PLUGIN_NAME; // Initialize main options.
+    this.name = PLUGIN_NAME;
 
+    // Initialize main options.
     this._options = options;
     this._cwd = this._options.cwd || process.cwd();
     this._dependencies = {};
     this._pkg = require(path.join(this._cwd, "package.json"));
-    this._debug = this._options.debug || false; // SourceMap can now be disable/enable on the plugin.
+    this._debug = this._options.debug || false;
 
-    this._sourcemap = this._options.sourcemap !== false; // This is a cache storing a directory path to associated package.
+    // SourceMap can now be disable/enable on the plugin.
+    this._sourcemap = this._options.sourcemap !== false;
+
+    // This is a cache storing a directory path to associated package.
     // This is an improvement to avoid looking for package information for
     // already scanned directory.
-
     this._cache = {};
   }
+
   /**
    * Enable source map.
    *
    * @return {void}
    */
-
   disableSourceMap() {
     this._sourcemap = false;
   }
+
   /**
    * Hook triggered by `rollup` to load code from given path file.
    *
@@ -825,84 +774,99 @@ class LicensePlugin {
    * @param {string} id Module identifier.
    * @return {void}
    */
-
   scanDependency(id) {
     if (id.startsWith("\0")) {
       id = id.replace(/^\0/, "");
       this.debug(`scanning internal module ${id}`);
     }
+    if (id.indexOf("virtual:") === 0) {
+      this.debug(`skipping virtual module: ${id}`);
+      return;
+    }
+    this.debug(`scanning ${id}`);
 
-    this.debug(`scanning ${id}`); // Look for the `package.json` file
-
-    let dir = path.parse(id).dir;
+    // Look for the `package.json` file
+    let dir = path.resolve(path.parse(id).dir);
     let pkg = null;
     const scannedDirs = [];
-
-    while (dir && dir !== this._cwd) {
+    this.debug(`iterative over directory tree, starting with: ${dir}`);
+    while (dir && dir !== this._cwd && !scannedDirs.includes(dir)) {
       // Try the cache.
       if (_.has(this._cache, dir)) {
         pkg = this._cache[dir];
-
         if (pkg) {
           this.debug(`found package.json in cache (package: ${pkg.name})`);
           this.addDependency(pkg);
         }
-
         break;
       }
-
       scannedDirs.push(dir);
+      this.debug(`looking for package.json file in: ${dir}`);
       const pkgPath = path.join(dir, "package.json");
       const exists = fs.existsSync(pkgPath);
-
       if (exists) {
-        this.debug(`found package.json at: ${pkgPath}, read it`); // Read `package.json` file
+        this.debug(`found package.json at: ${pkgPath}, read it`);
 
-        const pkgJson = JSON.parse(fs.readFileSync(pkgPath, "utf-8")); // We are probably in a package.json specifying the type of package (module, cjs).
+        // Read `package.json` file
+        const pkgJson = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+
+        // We are probably in a package.json specifying the type of package (module, cjs).
         // Nevertheless, if the package name is not defined, we must not use this `package.json` descriptor.
-
         const license = pkgJson.license || pkgJson.licenses;
         const hasLicense = license && license.length > 0;
         const name = pkgJson.name;
+        const version = pkgJson.version;
         const isValidPackageName = name && packageNameRegex.test(name);
-
-        if (isValidPackageName || hasLicense) {
+        if ((isValidPackageName && version) || hasLicense) {
           // We found it!
-          pkg = pkgJson; // Read license file, if it exists.
+          pkg = pkgJson;
 
-          const licenseFile = glob.sync(path.join(dir, "LICENSE*"))[0];
-
+          // Read license file, if it exists.
+          const cwd = this._cwd || process.cwd();
+          const absolutePath = path.join(
+            dir,
+            "[lL][iI][cC][eE][nN][cCsS][eE]*"
+          );
+          const relativeToCwd = path.relative(cwd, absolutePath);
+          const licenseFile = this._findGlob(relativeToCwd, cwd).find(
+            (file) => fs.existsSync(file) && fs.lstatSync(file).isFile()
+          );
           if (licenseFile) {
             pkg.licenseText = fs.readFileSync(licenseFile, "utf-8");
-          } // Add the new dependency to the set of third-party dependencies.
+          }
 
-          this.addDependency(pkg); // We can stop now.
+          // Add the new dependency to the set of third-party dependencies.
+          this.addDependency(pkg);
 
+          // We can stop now.
           break;
         }
-      } // Go up in the directory tree.
+      }
 
-      dir = path.normalize(path.join(dir, ".."));
-    } // Update the cache
+      // Go up in the directory tree.
+      dir = path.resolve(path.join(dir, ".."));
+      this.debug(`going up in the directory tree: ${dir}`);
+    }
 
+    // Update the cache
     _.forEach(scannedDirs, (scannedDir) => {
       this._cache[scannedDir] = pkg;
     });
   }
+
   /**
    * Hook triggered by `rollup` to load code from given path file.
    *
    * @param {Object} dependencies List of modules included in the final bundle.
    * @return {void}
    */
-
   scanDependencies(dependencies) {
     this.debug(`Scanning: ${dependencies}`);
-
     _.forEach(dependencies, (dependency) => {
       this.scanDependency(dependency);
     });
   }
+
   /**
    * Hook triggered by `rollup` to transform the final generated bundle.
    * This hook is used here to prepend the license banner to the final bundle.
@@ -912,109 +876,109 @@ class LicensePlugin {
    * @return {Object} The result containing the code and, optionnally, the source map
    *                  if it has been enabled (using `enableSourceMap` method).
    */
-
   prependBanner(code, sourcemap) {
     // Create a magicString: do not manipulate the string directly since it
     // will be used to generate the sourcemap.
     const magicString = new MagicString(code);
     const banner = this._options.banner;
-
     const content = this._readBanner(banner);
-
     if (content) {
       magicString.prepend(EOL);
       magicString.prepend(this._generateBanner(content, banner));
     }
-
     const result = {
       code: magicString.toString(),
     };
-
     if (this._sourcemap !== false && sourcemap !== false) {
       result.map = magicString.generateMap({
         hires: true,
       });
     }
-
     return result;
   }
+
   /**
    * Add new dependency to the bundle descriptor.
    *
    * @param {Object} pkg Dependency package information.
    * @return {void}
    */
-
   addDependency(pkg) {
     const name = pkg.name;
-
     if (!name) {
       this.warn("Trying to add dependency without any name, skipping it.");
     } else if (!_.has(this._dependencies, name)) {
       this._dependencies[name] = new Dependency(pkg);
     }
   }
+
   /**
    * Scan third-party dependencies, and:
    * - Warn for license violations.
    * - Generate summary.
    *
-   * @param {boolean} includePrivate Flag that can be used to include / exclude private dependencies.
    * @return {void}
    */
-
   scanThirdParties() {
     const thirdParty = this._options.thirdParty;
-
     if (!thirdParty) {
       return;
     }
-
     const includePrivate = thirdParty.includePrivate || false;
-
     const outputDependencies = _.chain(this._dependencies)
       .values()
       .filter((dependency) => includePrivate || !dependency.private)
       .value();
-
     if (_.isFunction(thirdParty)) {
-      return thirdParty(outputDependencies);
+      thirdParty(outputDependencies);
+      return;
     }
-
     const allow = thirdParty.allow;
-
     if (allow) {
       this._scanLicenseViolations(outputDependencies, allow);
     }
-
     const output = thirdParty.output;
-
     if (output) {
       this._exportThirdParties(outputDependencies, output);
     }
   }
+
   /**
    * Log debug message if debug mode is enabled.
    *
    * @param {string} msg Log message.
    * @return {void}
    */
-
   debug(msg) {
     if (this._debug) {
       console.debug(`[${this.name}] -- ${msg}`);
     }
   }
+
   /**
    * Log warn message.
    *
    * @param {string} msg Log message.
    * @return {void}
    */
-
   warn(msg) {
     console.warn(`[${this.name}] -- ${msg}`);
   }
+
+  /**
+   * Find given file, matching given pattern.
+   *
+   * @param {string} pattern Pattern to look for.
+   * @param {string} cwd Working directory.
+   * @returns {*} All match.
+   * @private
+   */
+  _findGlob(pattern, cwd) {
+    return glob.sync(pattern, {
+      cwd,
+    });
+  }
+
   /**
    * Read banner from given options and returns it.
    *
@@ -1022,45 +986,48 @@ class LicensePlugin {
    * @return {string|null} The banner template.
    * @private
    */
-
   _readBanner(banner) {
     if (_.isNil(banner)) {
       return null;
-    } // Banner can be defined as a simple inline string.
+    }
 
+    // Banner can be defined as a simple inline string.
     if (_.isString(banner)) {
       this.debug("prepend banner from raw string");
       return banner;
-    } // Extract banner content.
+    }
 
-    const content = _.result(banner, "content"); // Content can be an inline string.
+    // Extract banner content.
+    const content = _.result(banner, "content");
 
+    // Content can be an inline string.
     if (_.isString(content)) {
       this.debug("prepend banner from content raw string");
       return content;
-    } // Otherwise, file must be defined (if not, that's an error).
+    }
 
+    // Otherwise, file must be defined (if not, that's an error).
     if (!_.has(content, "file")) {
       throw new Error(
         `[${this.name}] -- Cannot find banner content, please specify an inline content, or a path to a file`
       );
     }
-
     const file = content.file;
     const encoding = content.encoding || "utf-8";
     this.debug(`prepend banner from file: ${file}`);
     this.debug(`use encoding: ${encoding}`);
     const filePath = path.resolve(file);
-    const exists = fs.existsSync(filePath); // Fail fast if file does not exist.
+    const exists = fs.existsSync(filePath);
 
+    // Fail fast if file does not exist.
     if (!exists) {
       throw new Error(
         `[${this.name}] -- Template file ${filePath} does not exist, or cannot be read`
       );
     }
-
     return fs.readFileSync(filePath, encoding);
   }
+
   /**
    * Generate banner output from given raw string and given options.
    *
@@ -1072,15 +1039,13 @@ class LicensePlugin {
    * @return {string} The banner output.
    * @private
    */
-
   _generateBanner(content, banner) {
     // Create the template function with lodash.
-    const tmpl = _.template(content); // Generate the banner.
+    const tmpl = _.template(content);
 
+    // Generate the banner.
     const pkg = this._pkg;
-
     const dependencies = _.values(this._dependencies);
-
     const data = banner.data ? _.result(banner, "data") : {};
     const text = tmpl({
       _,
@@ -1088,12 +1053,14 @@ class LicensePlugin {
       pkg,
       dependencies,
       data,
-    }); // Compute comment style to use.
+    });
 
+    // Compute comment style to use.
     const style = _.has(banner, "commentStyle")
       ? banner.commentStyle
-      : computeDefaultCommentStyle(text); // Ensure given style name is valid.
+      : computeDefaultCommentStyle(text);
 
+    // Ensure given style name is valid.
     if (!_.has(COMMENT_STYLES, style)) {
       throw new Error(
         `Unknown comment style ${style}, please use one of: ${_.keys(
@@ -1101,12 +1068,12 @@ class LicensePlugin {
         )}`
       );
     }
-
     this.debug(`generate banner using comment style: ${style}`);
     return COMMENT_STYLES[style]
       ? generateBlockComment(text, COMMENT_STYLES[style])
       : text;
   }
+
   /**
    * Scan for dependency violations and print a warning if some violations are found.
    *
@@ -1114,12 +1081,12 @@ class LicensePlugin {
    * @param {string} allow The allowed licenses as a SPDX pattern.
    * @return {void}
    */
-
   _scanLicenseViolations(outputDependencies, allow) {
     _.forEach(outputDependencies, (dependency) => {
       this._scanLicenseViolation(dependency, allow);
     });
   }
+
   /**
    * Scan dependency for a dependency violation.
    *
@@ -1127,21 +1094,19 @@ class LicensePlugin {
    * @param {string|function|object} allow The allowed licenses as a SPDX pattern, or a validator function.
    * @return {void}
    */
-
   _scanLicenseViolation(dependency, allow) {
     const testFn =
       _.isString(allow) || _.isFunction(allow) ? allow : allow.test;
     const isValid = _.isFunction(testFn)
       ? testFn(dependency)
       : licenseValidator.isValid(dependency, testFn);
-
     if (!isValid) {
       const failOnUnlicensed = allow.failOnUnlicensed === true;
       const failOnViolation = allow.failOnViolation === true;
-
       this._handleInvalidLicense(dependency, failOnUnlicensed, failOnViolation);
     }
   }
+
   /**
    * Handle invalid dependency:
    * - Print a warning for unlicensed dependency.
@@ -1152,7 +1117,6 @@ class LicensePlugin {
    * @param {boolean} failOnViolation `true` to fail on license violation, `false` otherwise.
    * @return {void}
    */
-
   _handleInvalidLicense(dependency, failOnUnlicensed, failOnViolation) {
     if (licenseValidator.isUnlicensed(dependency)) {
       this._handleUnlicensedDependency(dependency, failOnUnlicensed);
@@ -1160,6 +1124,7 @@ class LicensePlugin {
       this._handleLicenseViolation(dependency, failOnViolation);
     }
   }
+
   /**
    * Handle unlicensed dependency: print a warning to the console to alert for the dependency
    * that should be fixed.
@@ -1168,16 +1133,15 @@ class LicensePlugin {
    * @param {boolean} fail `true` to fail instead of emitting a simple warning.
    * @return {void}
    */
-
   _handleUnlicensedDependency(dependency, fail) {
     const message = `Dependency "${dependency.name}" does not specify any license.`;
-
     if (!fail) {
       this.warn(message);
     } else {
       throw new Error(message);
     }
   }
+
   /**
    * Handle license violation: print a warning to the console to alert about the violation.
    *
@@ -1185,18 +1149,17 @@ class LicensePlugin {
    * @param {boolean} fail `true` to fail instead of emitting a simple warning.
    * @return {void}
    */
-
   _handleLicenseViolation(dependency, fail) {
     const message =
       `Dependency "${dependency.name}" has a license (${dependency.license}) which is not compatible with ` +
       `requirement, looks like a license violation to fix.`;
-
     if (!fail) {
       this.warn(message);
     } else {
       throw new Error(message);
     }
   }
+
   /**
    * Export scanned third party dependencies to a destination output (a function, a
    * file written to disk, etc.).
@@ -1205,12 +1168,12 @@ class LicensePlugin {
    * @param {Object|function|string|Array} outputs The output (or the array of output) destination.
    * @return {void}
    */
-
   _exportThirdParties(outputDependencies, outputs) {
     _.forEach(_.castArray(outputs), (output) => {
       this._exportThirdPartiesToOutput(outputDependencies, output);
     });
   }
+
   /**
    * Export scanned third party dependencies to a destination output (a function, a
    * file written to disk, etc.).
@@ -1219,13 +1182,15 @@ class LicensePlugin {
    * @param {Array} output The output destination.
    * @return {void}
    */
-
   _exportThirdPartiesToOutput(outputDependencies, output) {
     if (_.isFunction(output)) {
-      return output(outputDependencies);
-    } // Default is to export to given file.
-    // Allow custom formatting of output using given template option.
+      output(outputDependencies);
+      return;
+    }
 
+    // Default is to export to given file.
+
+    // Allow custom formatting of output using given template option.
     const template = _.isString(output.template)
       ? (dependencies) =>
           _.template(output.template)({
@@ -1234,31 +1199,29 @@ class LicensePlugin {
             moment,
           })
       : output.template;
-
     const defaultTemplate = (dependencies) =>
       _.isEmpty(dependencies)
         ? "No third parties dependencies"
         : _.map(dependencies, (d) => d.text()).join(
             `${EOL}${EOL}---${EOL}${EOL}`
           );
-
     const text = _.isFunction(template)
       ? template(outputDependencies)
       : defaultTemplate(outputDependencies);
-
     const isOutputFile = _.isString(output);
-
     const file = isOutputFile ? output : output.file;
     const encoding = isOutputFile ? "utf-8" : output.encoding || "utf-8";
     this.debug(`exporting third-party summary to ${file}`);
-    this.debug(`use encoding: ${encoding}`); // Create directory if it does not already exist.
+    this.debug(`use encoding: ${encoding}`);
 
+    // Create directory if it does not already exist.
     mkdirp.sync(path.parse(file).dir);
     fs.writeFileSync(file, (text || "").trim(), {
       encoding,
     });
   }
 }
+
 /**
  * Create new `rollup-plugin-license` instance with given
  * options.
@@ -1266,7 +1229,6 @@ class LicensePlugin {
  * @param {Object} options Option object.
  * @return {LicensePlugin} The new instance.
  */
-
 function licensePlugin(options) {
   return new LicensePlugin(licensePluginOptions(options));
 }
@@ -1277,7 +1239,6 @@ function licensePlugin(options) {
  * @param {Object} options Plugin options.
  * @return {Object} Plugin instance.
  */
-
 function rollupPluginLicense(options = {}) {
   const plugin = licensePlugin(options);
   return {
@@ -1286,7 +1247,6 @@ function rollupPluginLicense(options = {}) {
      * @type {string}
      */
     name: plugin.name,
-
     /**
      * Function called by rollup when the final bundle is generated: it is used
      * to prepend the banner file on the generated bundle.
@@ -1307,7 +1267,6 @@ function rollupPluginLicense(options = {}) {
       );
       return plugin.prependBanner(code, outputOptions.sourcemap !== false);
     },
-
     /**
      * Function called by rollup when the final bundle will be written on disk: it
      * is used to generate a file containing a summary of all third-party dependencies

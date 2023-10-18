@@ -1,0 +1,27 @@
+Description: update to recent @rollup/plugin-node-resolve
+Author: Yadd <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2023-01-31
+
+--- a/docs/tools/index.md
++++ b/docs/tools/index.md
+@@ -104,7 +104,7 @@
+ 	plugins: [
+ 		resolve({
+ 			// pass custom options to the resolve plugin
+-			moduleDirectories: ['node_modules']
++			modulePaths: ['node_modules']
+ 		})
+ 	],
+ 	// indicate which modules should be treated as external
+--- a/test/chunking-form/samples/preserve-modules-root/_config.js
++++ b/test/chunking-form/samples/preserve-modules-root/_config.js
+@@ -16,7 +16,7 @@
+ 				}
+ 			},
+ 			resolve({
+-				moduleDirectories: ['custom_modules']
++				modulePaths: ['custom_modules']
+ 			}),
+ 			commonjs()
+ 		],

@@ -2,15 +2,15 @@
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
 	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.myBundle = {}));
-}(this, (function (exports) { 'use strict';
+})(this, (function (exports) { 'use strict';
 
 	const foo = 1;
 	const bar = 2;
 
 	var namespace = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		foo: foo,
-		bar: bar
+		bar: bar,
+		foo: foo
 	});
 
 	console.log( Object.keys( namespace ) );
@@ -21,6 +21,4 @@
 	exports.a = a;
 	exports.b = b;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-})));
+}));

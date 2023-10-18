@@ -1,30 +1,20 @@
-import MagicString from 'magic-string';
-import { RenderOptions } from '../../utils/renderHelpers';
-import { HasEffectsContext } from '../ExecutionContext';
-import { UNKNOWN_PATH } from '../utils/PathTracker';
-import * as NodeType from './NodeType';
-import { ExpressionNode, NodeBase } from './shared/Node';
+import type MagicString from 'magic-string';
+import type { RenderOptions } from '../../utils/renderHelpers';
+import type { HasEffectsContext } from '../ExecutionContext';
+import type * as NodeType from './NodeType';
+import { type ExpressionNode, NodeBase } from './shared/Node';
 
 export default class YieldExpression extends NodeBase {
-	argument!: ExpressionNode | null;
-	delegate!: boolean;
-	type!: NodeType.tYieldExpression;
+	declare argument: ExpressionNode | null;
+	declare delegate: boolean;
+	declare type: NodeType.tYieldExpression;
 
-	bind() {
-		super.bind();
-		if (this.argument !== null) {
-			this.argument.deoptimizePath(UNKNOWN_PATH);
-		}
+	hasEffects(context: HasEffectsContext): boolean {
+		if (!this.deoptimized) this.applyDeoptimizations();
+		return !(context.ignore.returnYield && !this.argument?.hasEffects(context));
 	}
 
-	hasEffects(context: HasEffectsContext) {
-		return (
-			!context.ignore.returnAwaitYield ||
-			(this.argument !== null && this.argument.hasEffects(context))
-		);
-	}
-
-	render(code: MagicString, options: RenderOptions) {
+	render(code: MagicString, options: RenderOptions): void {
 		if (this.argument) {
 			this.argument.render(code, options, { preventASI: true });
 			if (this.argument.start === this.start + 5 /* 'yield'.length */) {

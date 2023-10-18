@@ -1,7 +1,6 @@
-define(['external'], function (external) { 'use strict';
+define(['external'], (function (external) { 'use strict';
 
-	function _interopNamespace(e) {
-		if (e && e.__esModule) return e;
+	function _interopNamespaceDefault(e) {
 		var n = Object.create(null);
 		if (e) {
 			Object.keys(e).forEach(function (k) {
@@ -9,19 +8,17 @@ define(['external'], function (external) { 'use strict';
 					var d = Object.getOwnPropertyDescriptor(e, k);
 					Object.defineProperty(n, k, d.get ? d : {
 						enumerable: true,
-						get: function () {
-							return e[k];
-						}
+						get: function () { return e[k]; }
 					});
 				}
 			});
 		}
-		n['default'] = e;
+		n.default = e;
 		return Object.freeze(n);
 	}
 
-	var external__namespace = /*#__PURE__*/_interopNamespace(external);
+	var external__namespace = /*#__PURE__*/_interopNamespaceDefault(external);
 
 	console.log(external__namespace.default, external__namespace.foo);
 
-});
+}));

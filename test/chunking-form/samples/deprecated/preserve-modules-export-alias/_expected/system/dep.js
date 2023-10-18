@@ -1,10 +1,10 @@
-System.register([], function (exports) {
+System.register([], (function (exports) {
 	'use strict';
 	return {
-		execute: function () {
+		execute: (function () {
 
-			const foo = function (v) { return exports({ foo: v, bar: v }), v; }(1);
+			const foo = 1; exports({ foo: foo, bar: foo });
 
-		}
+		})
 	};
-});
+}));

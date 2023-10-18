@@ -1,4 +1,4 @@
-define(['exports', './one'], function (exports, one) { 'use strict';
+define(['exports', './one'], (function (exports, one) { 'use strict';
 
 	const __icon__ = {};
 
@@ -12,6 +12,4 @@ define(['exports', './one'], function (exports, one) { 'use strict';
 
 	exports.Component_one = __component__;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

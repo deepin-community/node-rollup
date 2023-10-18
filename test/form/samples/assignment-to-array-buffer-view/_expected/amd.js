@@ -1,4 +1,4 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
 	var buffer = new ArrayBuffer( 8 );
 
@@ -9,6 +9,4 @@ define(['exports'], function (exports) { 'use strict';
 
 	exports.view8 = view8;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

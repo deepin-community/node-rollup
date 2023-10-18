@@ -1,81 +1,65 @@
-import ExternalModule from '../../ExternalModule';
-import Module from '../../Module';
-import { RESERVED_NAMES } from '../../utils/reservedNames';
-import { CallOptions } from '../CallOptions';
-import { DeoptimizableEntity } from '../DeoptimizableEntity';
-import { HasEffectsContext, InclusionContext } from '../ExecutionContext';
-import Identifier from '../nodes/Identifier';
+import type ExternalModule from '../../ExternalModule';
+import type Module from '../../Module';
+import type { RenderOptions } from '../../utils/renderHelpers';
+import type { HasEffectsContext } from '../ExecutionContext';
+import type { NodeInteraction } from '../NodeInteractions';
+import { INTERACTION_ACCESSED } from '../NodeInteractions';
+import type Identifier from '../nodes/Identifier';
 import { ExpressionEntity } from '../nodes/shared/Expression';
-import { ExpressionNode } from '../nodes/shared/Node';
-import SpreadElement from '../nodes/SpreadElement';
-import { ObjectPath, PathTracker } from '../utils/PathTracker';
-import { LiteralValueOrUnknown, UnknownValue, UNKNOWN_EXPRESSION } from '../values';
+import type { ObjectPath } from '../utils/PathTracker';
 
-export default class Variable implements ExpressionEntity {
+export default class Variable extends ExpressionEntity {
 	alwaysRendered = false;
-	included = false;
+	forbiddenNames: Set<string> | null = null;
+	initReached = false;
 	isId = false;
 	// both NamespaceVariable and ExternalVariable can be namespaces
-	isNamespace?: boolean;
+	declare isNamespace?: boolean;
 	isReassigned = false;
-	module?: Module | ExternalModule;
-	name: string;
+	kind: string | null = null;
+	declare module?: Module | ExternalModule;
 	renderBaseName: string | null = null;
 	renderName: string | null = null;
 
-	constructor(name: string) {
-		this.name = name;
+	constructor(public name: string) {
+		super();
 	}
 
 	/**
 	 * Binds identifiers that reference this variable to this variable.
 	 * Necessary to be able to change variable names.
 	 */
-	addReference(_identifier: Identifier) {}
+	addReference(_identifier: Identifier): void {}
 
-	deoptimizePath(_path: ObjectPath) {}
+	/**
+	 * Prevent this variable from being renamed to this name to avoid name
+	 * collisions
+	 */
+	forbidName(name: string) {
+		(this.forbiddenNames ||= new Set()).add(name);
+	}
 
 	getBaseVariableName(): string {
 		return this.renderBaseName || this.renderName || this.name;
 	}
 
-	getLiteralValueAtPath(
-		_path: ObjectPath,
-		_recursionTracker: PathTracker,
-		_origin: DeoptimizableEntity
-	): LiteralValueOrUnknown {
-		return UnknownValue;
-	}
-
-	getName(): string {
+	getName(
+		getPropertyAccess: (name: string) => string,
+		useOriginalName?: RenderOptions['useOriginalName']
+	): string {
+		if (useOriginalName?.(this)) {
+			return this.name;
+		}
 		const name = this.renderName || this.name;
-		return this.renderBaseName
-			? `${this.renderBaseName}${RESERVED_NAMES[name] ? `['${name}']` : `.${name}`}`
-			: name;
+		return this.renderBaseName ? `${this.renderBaseName}${getPropertyAccess(name)}` : name;
 	}
 
-	getReturnExpressionWhenCalledAtPath(
-		_path: ObjectPath,
-		_recursionTracker: PathTracker,
-		_origin: DeoptimizableEntity
-	): ExpressionEntity {
-		return UNKNOWN_EXPRESSION;
-	}
-
-	hasEffectsWhenAccessedAtPath(path: ObjectPath, _context: HasEffectsContext) {
-		return path.length > 0;
-	}
-
-	hasEffectsWhenAssignedAtPath(_path: ObjectPath, _context: HasEffectsContext) {
-		return true;
-	}
-
-	hasEffectsWhenCalledAtPath(
-		_path: ObjectPath,
-		_callOptions: CallOptions,
+	hasEffectsOnInteractionAtPath(
+		path: ObjectPath,
+		{ type }: NodeInteraction,
 		_context: HasEffectsContext
-	) {
-		return true;
+	): boolean {
+		return type !== INTERACTION_ACCESSED || path.length > 0;
 	}
 
 	/**
@@ -84,19 +68,13 @@ export default class Variable implements ExpressionEntity {
 	 * previously.
 	 * Once a variable is included, it should take care all its declarations are included.
 	 */
-	include() {
+	include(): void {
 		this.included = true;
 	}
 
-	includeCallArguments(context: InclusionContext, args: (ExpressionNode | SpreadElement)[]): void {
-		for (const arg of args) {
-			arg.include(context, false);
-		}
-	}
+	markCalledFromTryStatement(): void {}
 
-	markCalledFromTryStatement() {}
-
-	setRenderNames(baseName: string | null, name: string | null) {
+	setRenderNames(baseName: string | null, name: string | null): void {
 		this.renderBaseName = baseName;
 		this.renderName = name;
 	}

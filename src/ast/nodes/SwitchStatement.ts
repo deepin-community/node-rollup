@@ -1,53 +1,59 @@
-import MagicString from 'magic-string';
-import { RenderOptions, renderStatementList } from '../../utils/renderHelpers';
+import type MagicString from 'magic-string';
+import { type RenderOptions, renderStatementList } from '../../utils/renderHelpers';
 import {
-	BROKEN_FLOW_BREAK_CONTINUE,
 	createHasEffectsContext,
-	HasEffectsContext,
-	InclusionContext
+	type HasEffectsContext,
+	type InclusionContext
 } from '../ExecutionContext';
 import BlockScope from '../scopes/BlockScope';
-import Scope from '../scopes/Scope';
-import * as NodeType from './NodeType';
-import { ExpressionNode, IncludeChildren, StatementBase } from './shared/Node';
-import SwitchCase from './SwitchCase';
+import type ChildScope from '../scopes/ChildScope';
+import type Scope from '../scopes/Scope';
+import type * as NodeType from './NodeType';
+import type SwitchCase from './SwitchCase';
+import type { ExpressionNode, GenericEsTreeNode, IncludeChildren } from './shared/Node';
+import { StatementBase } from './shared/Node';
 
 export default class SwitchStatement extends StatementBase {
-	cases!: SwitchCase[];
-	discriminant!: ExpressionNode;
-	type!: NodeType.tSwitchStatement;
+	declare cases: readonly SwitchCase[];
+	declare discriminant: ExpressionNode;
+	declare type: NodeType.tSwitchStatement;
 
-	private defaultCase!: number | null;
+	private declare defaultCase: number | null;
+	private declare parentScope: ChildScope;
 
-	createScope(parentScope: Scope) {
+	createScope(parentScope: Scope): void {
+		this.parentScope = parentScope as ChildScope;
 		this.scope = new BlockScope(parentScope);
 	}
 
-	hasEffects(context: HasEffectsContext) {
+	hasEffects(context: HasEffectsContext): boolean {
 		if (this.discriminant.hasEffects(context)) return true;
-		const {
-			brokenFlow,
-			ignore: { breaks }
-		} = context;
-		let minBrokenFlow = Infinity;
-		context.ignore.breaks = true;
+		const { brokenFlow, hasBreak, ignore } = context;
+		const { breaks } = ignore;
+		ignore.breaks = true;
+		context.hasBreak = false;
+		let onlyHasBrokenFlow = true;
 		for (const switchCase of this.cases) {
 			if (switchCase.hasEffects(context)) return true;
-			minBrokenFlow = context.brokenFlow < minBrokenFlow ? context.brokenFlow : minBrokenFlow;
+			// eslint-disable-next-line unicorn/consistent-destructuring
+			onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
+			context.hasBreak = false;
 			context.brokenFlow = brokenFlow;
 		}
-		if (this.defaultCase !== null && !(minBrokenFlow === BROKEN_FLOW_BREAK_CONTINUE)) {
-			context.brokenFlow = minBrokenFlow;
+		if (this.defaultCase !== null) {
+			context.brokenFlow = onlyHasBrokenFlow;
 		}
-		context.ignore.breaks = breaks;
+		ignore.breaks = breaks;
+		context.hasBreak = hasBreak;
 		return false;
 	}
 
-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
 		this.included = true;
 		this.discriminant.include(context, includeChildrenRecursively);
-		const { brokenFlow } = context;
-		let minBrokenFlow = Infinity;
+		const { brokenFlow, hasBreak } = context;
+		context.hasBreak = false;
+		let onlyHasBrokenFlow = true;
 		let isCaseIncluded =
 			includeChildrenRecursively ||
 			(this.defaultCase !== null && this.defaultCase < this.cases.length - 1);
@@ -63,22 +69,21 @@ export default class SwitchStatement extends StatementBase {
 			}
 			if (isCaseIncluded) {
 				switchCase.include(context, includeChildrenRecursively);
-				minBrokenFlow = minBrokenFlow < context.brokenFlow ? minBrokenFlow : context.brokenFlow;
+				// eslint-disable-next-line unicorn/consistent-destructuring
+				onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
+				context.hasBreak = false;
 				context.brokenFlow = brokenFlow;
 			} else {
-				minBrokenFlow = brokenFlow;
+				onlyHasBrokenFlow = brokenFlow;
 			}
 		}
-		if (
-			isCaseIncluded &&
-			this.defaultCase !== null &&
-			!(minBrokenFlow === BROKEN_FLOW_BREAK_CONTINUE)
-		) {
-			context.brokenFlow = minBrokenFlow;
+		if (isCaseIncluded && this.defaultCase !== null) {
+			context.brokenFlow = onlyHasBrokenFlow;
 		}
+		context.hasBreak = hasBreak;
 	}
 
-	initialise() {
+	initialise(): void {
 		for (let caseIndex = 0; caseIndex < this.cases.length; caseIndex++) {
 			if (this.cases[caseIndex].test === null) {
 				this.defaultCase = caseIndex;
@@ -88,7 +93,16 @@ export default class SwitchStatement extends StatementBase {
 		this.defaultCase = null;
 	}
 
-	render(code: MagicString, options: RenderOptions) {
+	parseNode(esTreeNode: GenericEsTreeNode) {
+		this.discriminant = new (this.context.getNodeConstructor(esTreeNode.discriminant.type))(
+			esTreeNode.discriminant,
+			this,
+			this.parentScope
+		);
+		super.parseNode(esTreeNode);
+	}
+
+	render(code: MagicString, options: RenderOptions): void {
 		this.discriminant.render(code, options);
 		if (this.cases.length > 0) {
 			renderStatementList(this.cases, code, this.cases[0].start, this.end - 1, options);

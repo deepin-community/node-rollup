@@ -1,18 +1,15 @@
-System.register([], function (exports) {
+System.register([], (function (exports) {
   'use strict';
   return {
-    execute: function () {
+    execute: (function () {
 
-      exports({
-        p: void 0,
-        q: q
-      });
+      exports('q', q);
 
-      var p;
+      var p; exports('p', p);
       function q () {
-        p = exports('p', 10);
+        exports('p', p = 10);
       }
 
-    }
+    })
   };
-});
+}));

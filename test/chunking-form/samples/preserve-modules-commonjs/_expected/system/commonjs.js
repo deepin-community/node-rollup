@@ -1,21 +1,25 @@
-System.register(['external', './other.js', './_virtual/other.js_commonjs-exports'], function (exports) {
+System.register(['./_virtual/_commonjsHelpers.js', 'external', './other.js', './_virtual/other.js'], (function (exports) {
 	'use strict';
-	var require$$0, other;
+	var getDefaultExportFromCjs, require$$0, other;
 	return {
 		setters: [function (module) {
+			getDefaultExportFromCjs = module.getDefaultExportFromCjs;
+		}, function (module) {
 			require$$0 = module.default;
-		}, function () {}, function (module) {
+		}, null, function (module) {
 			other = module.__exports;
 		}],
-		execute: function () {
+		execute: (function () {
 
 			const external = require$$0;
 			const { value } = other;
 
 			console.log(external, value);
 
-			var commonjs = exports('default', 42);
+			var commonjs = 42;
 
-		}
+			var value$1 = exports('default', /*@__PURE__*/getDefaultExportFromCjs(commonjs));
+
+		})
 	};
-});
+}));

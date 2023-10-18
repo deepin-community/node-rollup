@@ -4,13 +4,13 @@ Description: Disable help
  rollup in the archive and a proper staged build is used.
 Forwarded: not-needed
 Reviewed-By: Xavier Guimard <yadd@debian.org>
-Last-Update: 2020-09-28
+Last-Update: 2022-10-10
 
 --- a/cli/cli.ts
 +++ b/cli/cli.ts
-@@ -1,4 +1,5 @@
+@@ -1,5 +1,5 @@
+ import process from 'node:process';
 -import help from 'help.md';
-+//import help from 'help.md';
 +const help ='See /usr/share/doc/rollup/help.md or man rollup';
  import { version } from 'package.json';
  import argParser from 'yargs-parser';

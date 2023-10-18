@@ -1,4 +1,4 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
 	var _missingExportShim = void 0;
 
@@ -11,6 +11,4 @@ define(['exports'], function (exports) { 'use strict';
 	exports.missing2 = _missingExportShim;
 	exports.previousShimmedExport = _missingExportShim$1;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

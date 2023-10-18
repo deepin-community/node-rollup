@@ -1,21 +1,24 @@
-const fs = require('fs');
-const path = require('path');
+const { unlinkSync, writeFileSync } = require('node:fs');
+const path = require('node:path');
+const { atomicWriteFileSync } = require('../../../../utils');
 
 let configFile;
 
-module.exports = {
+module.exports = defineTest({
 	description: 'keeps watching the config file in case the initial file contains an error',
 	command: 'rollup -cw',
 	before() {
-		configFile = path.resolve(__dirname, 'rollup.config.js');
-		fs.writeFileSync(configFile, 'throw new Error("Config contains initial errors");');
+		configFile = path.join(__dirname, 'rollup.config.mjs');
+		writeFileSync(configFile, 'throw new Error("Config contains initial errors");');
 	},
 	after() {
-		fs.unlinkSync(configFile);
+		// synchronous sometimes does not seem to work, probably because the watch is not yet removed properly
+		setTimeout(() => unlinkSync(configFile), 300);
 	},
-	abortOnStderr(data) {
+	async abortOnStderr(data) {
 		if (data.includes('Config contains initial errors')) {
-			fs.writeFileSync(
+			await new Promise(resolve => setTimeout(resolve, 100));
+			atomicWriteFileSync(
 				configFile,
 				'export default {\n' +
 					'\tinput: "main.js",\n' +
@@ -31,4 +34,4 @@ module.exports = {
 			return true;
 		}
 	}
-};
+});

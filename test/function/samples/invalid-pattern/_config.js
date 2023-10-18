@@ -1,11 +1,11 @@
-module.exports = {
+module.exports = defineTest({
 	description: 'throws for invalid patterns',
 	options: {
-		output: { entryFileNames: '\0main.js' }
+		output: { entryFileNames: '../main.js' }
 	},
 	generateError: {
 		code: 'VALIDATION_ERROR',
 		message:
-			'Invalid pattern "\0main.js" for "output.entryFileNames", patterns can be neither absolute nor relative paths and must not contain invalid characters.'
+			'Invalid pattern "../main.js" for "output.entryFileNames", patterns can be neither absolute nor relative paths. If you want your files to be stored in a subdirectory, write its name without a leading slash like this: subdirectory/pattern.'
 	}
-};
+});

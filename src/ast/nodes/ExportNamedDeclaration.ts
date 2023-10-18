@@ -1,43 +1,47 @@
-import MagicString from 'magic-string';
-import { NodeRenderOptions, RenderOptions } from '../../utils/renderHelpers';
-import { HasEffectsContext } from '../ExecutionContext';
-import ClassDeclaration from './ClassDeclaration';
-import ExportSpecifier from './ExportSpecifier';
-import FunctionDeclaration from './FunctionDeclaration';
-import Literal from './Literal';
-import * as NodeType from './NodeType';
-import { Node, NodeBase } from './shared/Node';
-import VariableDeclaration from './VariableDeclaration';
+import type MagicString from 'magic-string';
+import type { NodeRenderOptions, RenderOptions } from '../../utils/renderHelpers';
+import type { HasEffectsContext } from '../ExecutionContext';
+import type ClassDeclaration from './ClassDeclaration';
+import type ExportSpecifier from './ExportSpecifier';
+import type FunctionDeclaration from './FunctionDeclaration';
+import type ImportAttribute from './ImportAttribute';
+import type Literal from './Literal';
+import type * as NodeType from './NodeType';
+import type VariableDeclaration from './VariableDeclaration';
+import { type Node, NodeBase } from './shared/Node';
 
 export default class ExportNamedDeclaration extends NodeBase {
-	declaration!: FunctionDeclaration | ClassDeclaration | VariableDeclaration | null;
-	needsBoundaries!: true;
-	source!: Literal<string> | null;
-	specifiers!: ExportSpecifier[];
-	type!: NodeType.tExportNamedDeclaration;
+	declare assertions: ImportAttribute[];
+	declare declaration: FunctionDeclaration | ClassDeclaration | VariableDeclaration | null;
+	declare needsBoundaries: true;
+	declare source: Literal<string> | null;
+	declare specifiers: readonly ExportSpecifier[];
+	declare type: NodeType.tExportNamedDeclaration;
 
-	bind() {
+	bind(): void {
 		// Do not bind specifiers
-		if (this.declaration !== null) this.declaration.bind();
+		this.declaration?.bind();
 	}
 
-	hasEffects(context: HasEffectsContext) {
-		return this.declaration !== null && this.declaration.hasEffects(context);
+	hasEffects(context: HasEffectsContext): boolean {
+		return !!this.declaration?.hasEffects(context);
 	}
 
-	initialise() {
+	initialise(): void {
 		this.context.addExport(this);
 	}
 
-	render(code: MagicString, options: RenderOptions, nodeRenderOptions?: NodeRenderOptions) {
+	render(code: MagicString, options: RenderOptions, nodeRenderOptions?: NodeRenderOptions): void {
 		const { start, end } = nodeRenderOptions as { end: number; start: number };
 		if (this.declaration === null) {
 			code.remove(start, end);
 		} else {
 			code.remove(this.start, this.declaration.start);
-			(this.declaration as Node).render(code, options, { start, end });
+			(this.declaration as Node).render(code, options, { end, start });
 		}
 	}
+
+	protected applyDeoptimizations() {}
 }
 
 ExportNamedDeclaration.prototype.needsBoundaries = true;

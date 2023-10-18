@@ -1,11 +1,11 @@
-System.register(['./generated-dep2.js'], function () {
+System.register([], (function (exports) {
 	'use strict';
 	return {
-		setters: [function () {}],
-		execute: function () {
+		execute: (function () {
 
+			var x = exports('x', 43);
+			console.log('dep2');
 
-
-		}
+		})
 	};
-});
+}));

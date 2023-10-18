@@ -1,57 +1,52 @@
-import MagicString from 'magic-string';
-import { NO_SEMICOLON, RenderOptions } from '../../utils/renderHelpers';
-import { HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type MagicString from 'magic-string';
+import { NO_SEMICOLON, type RenderOptions } from '../../utils/renderHelpers';
+import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
 import BlockScope from '../scopes/BlockScope';
-import Scope from '../scopes/Scope';
-import * as NodeType from './NodeType';
-import { ExpressionNode, IncludeChildren, StatementBase, StatementNode } from './shared/Node';
-import VariableDeclaration from './VariableDeclaration';
+import type Scope from '../scopes/Scope';
+import type * as NodeType from './NodeType';
+import type VariableDeclaration from './VariableDeclaration';
+import {
+	type ExpressionNode,
+	type IncludeChildren,
+	StatementBase,
+	type StatementNode
+} from './shared/Node';
+import { hasLoopBodyEffects, includeLoopBody } from './shared/loops';
 
 export default class ForStatement extends StatementBase {
-	body!: StatementNode;
-	init!: VariableDeclaration | ExpressionNode | null;
-	test!: ExpressionNode | null;
-	type!: NodeType.tForStatement;
-	update!: ExpressionNode | null;
+	declare body: StatementNode;
+	declare init: VariableDeclaration | ExpressionNode | null;
+	declare test: ExpressionNode | null;
+	declare type: NodeType.tForStatement;
+	declare update: ExpressionNode | null;
 
-	createScope(parentScope: Scope) {
+	createScope(parentScope: Scope): void {
 		this.scope = new BlockScope(parentScope);
 	}
 
 	hasEffects(context: HasEffectsContext): boolean {
 		if (
-			(this.init && this.init.hasEffects(context)) ||
-			(this.test && this.test.hasEffects(context)) ||
-			(this.update && this.update.hasEffects(context))
-		)
+			this.init?.hasEffects(context) ||
+			this.test?.hasEffects(context) ||
+			this.update?.hasEffects(context)
+		) {
 			return true;
-		const {
-			brokenFlow,
-			ignore: { breaks, continues }
-		} = context;
-		context.ignore.breaks = true;
-		context.ignore.continues = true;
-		if (this.body.hasEffects(context)) return true;
-		context.ignore.breaks = breaks;
-		context.ignore.continues = continues;
-		context.brokenFlow = brokenFlow;
-		return false;
+		}
+		return hasLoopBodyEffects(context, this.body);
 	}
 
-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
 		this.included = true;
-		if (this.init) this.init.includeAsSingleStatement(context, includeChildrenRecursively);
-		if (this.test) this.test.include(context, includeChildrenRecursively);
-		const { brokenFlow } = context;
-		if (this.update) this.update.include(context, includeChildrenRecursively);
-		this.body.includeAsSingleStatement(context, includeChildrenRecursively);
-		context.brokenFlow = brokenFlow;
+		this.init?.include(context, includeChildrenRecursively, { asSingleStatement: true });
+		this.test?.include(context, includeChildrenRecursively);
+		this.update?.include(context, includeChildrenRecursively);
+		includeLoopBody(context, this.body, includeChildrenRecursively);
 	}
 
-	render(code: MagicString, options: RenderOptions) {
-		if (this.init) this.init.render(code, options, NO_SEMICOLON);
-		if (this.test) this.test.render(code, options, NO_SEMICOLON);
-		if (this.update) this.update.render(code, options, NO_SEMICOLON);
+	render(code: MagicString, options: RenderOptions): void {
+		this.init?.render(code, options, NO_SEMICOLON);
+		this.test?.render(code, options, NO_SEMICOLON);
+		this.update?.render(code, options, NO_SEMICOLON);
 		this.body.render(code, options);
 	}
 }

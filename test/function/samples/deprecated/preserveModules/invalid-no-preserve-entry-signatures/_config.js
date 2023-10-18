@@ -1,4 +1,4 @@
-module.exports = {
+module.exports = defineTest({
 	description: 'throws when setting preserveEntrySignatures to false',
 	options: {
 		strictDeprecations: false,
@@ -9,6 +9,7 @@ module.exports = {
 	generateError: {
 		code: 'INVALID_OPTION',
 		message:
-			'Setting "preserveEntrySignatures" to "false" is not supported for "output.preserveModules".'
+			'Invalid value for option "preserveEntrySignatures" - setting this option to false is not supported for "output.preserveModules".',
+		url: 'https://rollupjs.org/configuration-options/#preserveentrysignatures'
 	}
-};
+});

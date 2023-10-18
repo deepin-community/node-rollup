@@ -1,4 +1,4 @@
-System.register(['factory', 'baz', 'shipping-port', 'alphabet'], function () {
+System.register(['factory', 'baz', 'shipping-port', 'alphabet'], (function () {
 	'use strict';
 	var factory, foo, bar, port, containers, a, alphabet;
 	return {
@@ -14,7 +14,7 @@ System.register(['factory', 'baz', 'shipping-port', 'alphabet'], function () {
 			a = module.a;
 			alphabet = module.default;
 		}],
-		execute: function () {
+		execute: (function () {
 
 			factory( null );
 			foo( bar, port );
@@ -22,6 +22,6 @@ System.register(['factory', 'baz', 'shipping-port', 'alphabet'], function () {
 			console.log( a );
 			console.log( alphabet.length );
 
-		}
+		})
 	};
-});
+}));

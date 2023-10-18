@@ -1,4 +1,4 @@
-System.register(['external-auto', 'external-default', 'external-defaultOnly', 'external-esModule'], function (exports, module) {
+System.register(['external-auto', 'external-default', 'external-defaultOnly', 'external-esModule'], (function (exports, module) {
 	'use strict';
 	var fooAuto__default, barAuto, fooAuto, fooDefault__default, barDefault, fooDefault, fooDefaultOnly__default, fooDefaultOnly, fooEsModule__default, barEsModule, fooEsModule;
 	return {
@@ -18,7 +18,7 @@ System.register(['external-auto', 'external-default', 'external-defaultOnly', 'e
 			barEsModule = module.barEsModule;
 			fooEsModule = module;
 		}],
-		execute: function () {
+		execute: (function () {
 
 			console.log(fooAuto__default, barAuto, fooAuto);
 			console.log(fooDefault__default, barDefault, fooDefault);
@@ -32,6 +32,6 @@ System.register(['external-auto', 'external-default', 'external-defaultOnly', 'e
 			module.import(globalThis.external1).then(console.log);
 			module.import(globalThis.external2).then(console.log);
 
-		}
+		})
 	};
-});
+}));

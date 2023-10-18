@@ -1,7 +1,6 @@
-define(['exports', 'external-package'], function (exports, externalPackage) { 'use strict';
+define(['exports', 'external-package'], (function (exports, externalPackage) { 'use strict';
 
-	function _interopNamespace(e) {
-		if (e && e.__esModule) return e;
+	function _interopNamespaceDefault(e) {
 		var n = Object.create(null);
 		if (e) {
 			Object.keys(e).forEach(function (k) {
@@ -9,23 +8,19 @@ define(['exports', 'external-package'], function (exports, externalPackage) { 'u
 					var d = Object.getOwnPropertyDescriptor(e, k);
 					Object.defineProperty(n, k, d.get ? d : {
 						enumerable: true,
-						get: function () {
-							return e[k];
-						}
+						get: function () { return e[k]; }
 					});
 				}
 			});
 		}
-		n['default'] = e;
+		n.default = e;
 		return Object.freeze(n);
 	}
 
-	var externalPackage__namespace = /*#__PURE__*/_interopNamespace(externalPackage);
+	var externalPackage__namespace = /*#__PURE__*/_interopNamespaceDefault(externalPackage);
 
 
 
 	exports.ext = externalPackage__namespace;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

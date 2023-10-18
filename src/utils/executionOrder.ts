@@ -1,6 +1,5 @@
-import ExternalModule from '../ExternalModule';
+import type ExternalModule from '../ExternalModule';
 import Module from '../Module';
-import relativeId from './relativeId';
 
 interface OrderedExecutionUnit {
 	execIndex: number;
@@ -9,11 +8,14 @@ interface OrderedExecutionUnit {
 const compareExecIndex = <T extends OrderedExecutionUnit>(unitA: T, unitB: T) =>
 	unitA.execIndex > unitB.execIndex ? 1 : -1;
 
-export function sortByExecutionOrder(units: OrderedExecutionUnit[]) {
+export function sortByExecutionOrder(units: OrderedExecutionUnit[]): void {
 	units.sort(compareExecIndex);
 }
 
-export function analyseModuleExecution(entryModules: Module[]) {
+export function analyseModuleExecution(entryModules: readonly Module[]): {
+	cyclePaths: string[][];
+	orderedModules: Module[];
+} {
 	let nextExecIndex = 0;
 	const cyclePaths: string[][] = [];
 	const analysedModules = new Set<Module | ExternalModule>();
@@ -49,34 +51,34 @@ export function analyseModuleExecution(entryModules: Module[]) {
 		analysedModules.add(module);
 	};
 
-	for (const curEntry of entryModules) {
-		if (!parents.has(curEntry)) {
-			parents.set(curEntry, null);
-			analyseModule(curEntry);
+	for (const currentEntry of entryModules) {
+		if (!parents.has(currentEntry)) {
+			parents.set(currentEntry, null);
+			analyseModule(currentEntry);
 		}
 	}
-	for (const curEntry of dynamicImports) {
-		if (!parents.has(curEntry)) {
-			parents.set(curEntry, null);
-			analyseModule(curEntry);
+	for (const currentEntry of dynamicImports) {
+		if (!parents.has(currentEntry)) {
+			parents.set(currentEntry, null);
+			analyseModule(currentEntry);
 		}
 	}
 
-	return { orderedModules, cyclePaths };
+	return { cyclePaths, orderedModules };
 }
 
 function getCyclePath(
 	module: Module,
 	parent: Module,
-	parents: Map<Module | ExternalModule, Module | null>
-) {
+	parents: ReadonlyMap<Module | ExternalModule, Module | null>
+): string[] {
 	const cycleSymbol = Symbol(module.id);
-	const path = [relativeId(module.id)];
+	const path = [module.id];
 	let nextModule = parent;
 	module.cycles.add(cycleSymbol);
 	while (nextModule !== module) {
 		nextModule.cycles.add(cycleSymbol);
-		path.push(relativeId(nextModule.id));
+		path.push(nextModule.id);
 		nextModule = parents.get(nextModule)!;
 	}
 	path.push(path[0]);

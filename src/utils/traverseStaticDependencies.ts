@@ -1,7 +1,7 @@
 import ExternalModule from '../ExternalModule';
-import Module from '../Module';
+import type Module from '../Module';
 
-export function markModuleAndImpureDependenciesAsExecuted(baseModule: Module) {
+export function markModuleAndImpureDependenciesAsExecuted(baseModule: Module): void {
 	baseModule.isExecuted = true;
 	const modules = [baseModule];
 	const visitedModules = new Set<string>();
@@ -10,7 +10,7 @@ export function markModuleAndImpureDependenciesAsExecuted(baseModule: Module) {
 			if (
 				!(dependency instanceof ExternalModule) &&
 				!dependency.isExecuted &&
-				(dependency.info.hasModuleSideEffects || module.implicitlyLoadedBefore.has(dependency)) &&
+				(dependency.info.moduleSideEffects || module.implicitlyLoadedBefore.has(dependency)) &&
 				!visitedModules.has(dependency.id)
 			) {
 				dependency.isExecuted = true;

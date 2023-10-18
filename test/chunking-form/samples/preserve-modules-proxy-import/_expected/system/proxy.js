@@ -1,4 +1,4 @@
-System.register(['external'], function (exports) {
+System.register(['external'], (function (exports) {
 	'use strict';
 	var path;
 	return {
@@ -6,10 +6,10 @@ System.register(['external'], function (exports) {
 			path = module.default;
 			exports('default', module.default);
 		}],
-		execute: function () {
+		execute: (function () {
 
 
 
-		}
+		})
 	};
-});
+}));

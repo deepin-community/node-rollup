@@ -1,7 +1,6 @@
-define(['require', 'external'], function (require, external) { 'use strict';
+define(['require', 'external'], (function (require, external) { 'use strict';
 
-	function _interopNamespace(e) {
-		if (e && e.__esModule) return e;
+	function _interopNamespaceDefault(e) {
 		var n = Object.create(null);
 		if (e) {
 			Object.keys(e).forEach(function (k) {
@@ -9,18 +8,16 @@ define(['require', 'external'], function (require, external) { 'use strict';
 					var d = Object.getOwnPropertyDescriptor(e, k);
 					Object.defineProperty(n, k, d.get ? d : {
 						enumerable: true,
-						get: function () {
-							return e[k];
-						}
+						get: function () { return e[k]; }
 					});
 				}
 			});
 		}
-		n['default'] = e;
+		n.default = e;
 		return Object.freeze(n);
 	}
 
-	new Promise(function (resolve, reject) { require([external.join('a', 'b')], function (m) { resolve(/*#__PURE__*/_interopNamespace(m)); }, reject) });
+	(function (t) { return new Promise(function (resolve, reject) { require([t], function (m) { resolve(/*#__PURE__*/_interopNamespaceDefault(m)); }, reject); }); })(external.join('a', 'b'));
 	console.log(external.join);
 
-});
+}));

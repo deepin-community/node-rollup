@@ -1,13 +1,10 @@
-System.register(['./generated-dep.js'], function (exports) {
+System.register([], (function (exports) {
 	'use strict';
 	return {
-		setters: [function (module) {
-			exports('name', module.n);
-		}],
-		execute: function () {
+		execute: (function () {
 
+			var name = exports('name', 'name');
 
-
-		}
+		})
 	};
-});
+}));

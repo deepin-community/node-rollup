@@ -1,12 +1,12 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
 	const foo = 1;
 	const bar = 2;
 
 	var namespace = {
 		__proto__: null,
-		foo: foo,
-		bar: bar
+		bar: bar,
+		foo: foo
 	};
 
 	console.log( Object.keys( namespace ) );
@@ -17,6 +17,4 @@ define(['exports'], function (exports) { 'use strict';
 	exports.a = a;
 	exports.b = b;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

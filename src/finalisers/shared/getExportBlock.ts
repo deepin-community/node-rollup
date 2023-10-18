@@ -1,29 +1,31 @@
-import { ChunkDependencies, ChunkExports } from '../../Chunk';
-import { GetInterop } from '../../rollup/types';
+import type { ChunkDependency, ChunkExports } from '../../Chunk';
+import type { GetInterop } from '../../rollup/types';
+import type { GenerateCodeSnippets } from '../../utils/generateCodeSnippets';
 import {
 	defaultInteropHelpersByInteropType,
+	getToStringTagValue,
 	isDefaultAProperty,
 	namespaceInteropHelpersByInteropType
 } from '../../utils/interopHelpers';
 
 export function getExportBlock(
 	exports: ChunkExports,
-	dependencies: ChunkDependencies,
+	dependencies: readonly ChunkDependency[],
 	namedExportsMode: boolean,
 	interop: GetInterop,
-	compact: boolean | undefined,
+	snippets: GenerateCodeSnippets,
 	t: string,
 	externalLiveBindings: boolean,
 	mechanism = 'return '
-) {
-	const _ = compact ? '' : ' ';
-	const n = compact ? '' : '\n';
+): string {
+	const { _, getDirectReturnFunction, getFunctionIntro, getPropertyAccess, n, s } = snippets;
 	if (!namedExportsMode) {
 		return `${n}${n}${mechanism}${getSingleDefaultExport(
 			exports,
 			dependencies,
 			interop,
-			externalLiveBindings
+			externalLiveBindings,
+			getPropertyAccess
 		)};`;
 	}
 
@@ -31,7 +33,7 @@ export function getExportBlock(
 
 	for (const {
 		defaultVariableName,
-		id,
+		importPath,
 		isChunk,
 		name,
 		namedExportsMode: depNamedExportsMode,
@@ -49,25 +51,34 @@ export function getExportBlock(
 						defaultVariableName!,
 						namespaceVariableName!,
 						interop,
-						id,
-						externalLiveBindings
+						importPath,
+						externalLiveBindings,
+						getPropertyAccess
 					);
 					if (exportBlock) exportBlock += n;
-					exportBlock +=
-						specifier.imported !== '*' && specifier.needsLiveBinding
-							? `Object.defineProperty(exports,${_}'${specifier.reexported}',${_}{${n}` +
-							  `${t}enumerable:${_}true,${n}` +
-							  `${t}get:${_}function${_}()${_}{${n}` +
-							  `${t}${t}return ${importName};${n}${t}}${n}});`
-							: `exports.${specifier.reexported}${_}=${_}${importName};`;
+					if (specifier.imported !== '*' && specifier.needsLiveBinding) {
+						const [left, right] = getDirectReturnFunction([], {
+							functionReturn: true,
+							lineBreakIndent: null,
+							name: null
+						});
+						exportBlock +=
+							`Object.defineProperty(exports,${_}'${specifier.reexported}',${_}{${n}` +
+							`${t}enumerable:${_}true,${n}` +
+							`${t}get:${_}${left}${importName}${right}${n}});`;
+					} else {
+						exportBlock += `exports${getPropertyAccess(
+							specifier.reexported
+						)}${_}=${_}${importName};`;
+					}
 				}
 			}
 		}
 	}
 
-	for (const chunkExport of exports) {
-		const lhs = `exports.${chunkExport.exported}`;
-		const rhs = chunkExport.local;
+	for (const { exported, local } of exports) {
+		const lhs = `exports${getPropertyAccess(exported)}`;
+		const rhs = local;
 		if (lhs !== rhs) {
 			if (exportBlock) exportBlock += n;
 			exportBlock += `${lhs}${_}=${_}${rhs};`;
@@ -79,19 +90,16 @@ export function getExportBlock(
 			for (const specifier of reexports) {
 				if (specifier.reexported === '*') {
 					if (exportBlock) exportBlock += n;
-					if (specifier.needsLiveBinding) {
-						exportBlock +=
-							`Object.keys(${name}).forEach(function${_}(k)${_}{${n}` +
-							`${t}if${_}(k${_}!==${_}'default'${_}&&${_}!exports.hasOwnProperty(k))${_}Object.defineProperty(exports,${_}k,${_}{${n}` +
-							`${t}${t}enumerable:${_}true,${n}` +
-							`${t}${t}get:${_}function${_}()${_}{${n}` +
-							`${t}${t}${t}return ${name}[k];${n}` +
-							`${t}${t}}${n}${t}});${n}});`;
-					} else {
-						exportBlock +=
-							`Object.keys(${name}).forEach(function${_}(k)${_}{${n}` +
-							`${t}if${_}(k${_}!==${_}'default'${_}&&${_}!exports.hasOwnProperty(k))${_}exports[k]${_}=${_}${name}[k];${n}});`;
-					}
+					const copyPropertyIfNecessary = `{${n}${t}if${_}(k${_}!==${_}'default'${_}&&${_}!Object.prototype.hasOwnProperty.call(exports,${_}k))${_}${getDefineProperty(
+						name,
+						specifier.needsLiveBinding,
+						t,
+						snippets
+					)}${s}${n}}`;
+					exportBlock += `Object.keys(${name}).forEach(${getFunctionIntro(['k'], {
+						isAsync: false,
+						name: null
+					})}${copyPropertyIfNecessary});`;
 				}
 			}
 		}
@@ -106,16 +114,17 @@ export function getExportBlock(
 
 function getSingleDefaultExport(
 	exports: ChunkExports,
-	dependencies: ChunkDependencies,
+	dependencies: readonly ChunkDependency[],
 	interop: GetInterop,
-	externalLiveBindings: boolean
+	externalLiveBindings: boolean,
+	getPropertyAccess: (name: string) => string
 ) {
 	if (exports.length > 0) {
 		return exports[0].local;
 	} else {
 		for (const {
 			defaultVariableName,
-			id,
+			importPath,
 			isChunk,
 			name,
 			namedExportsMode: depNamedExportsMode,
@@ -131,8 +140,9 @@ function getSingleDefaultExport(
 					defaultVariableName!,
 					namespaceVariableName!,
 					interop,
-					id,
-					externalLiveBindings
+					importPath,
+					externalLiveBindings,
+					getPropertyAccess
 				);
 			}
 		}
@@ -148,58 +158,86 @@ function getReexportedImportName(
 	namespaceVariableName: string,
 	interop: GetInterop,
 	moduleId: string,
-	externalLiveBindings: boolean
+	externalLiveBindings: boolean,
+	getPropertyAccess: (name: string) => string
 ) {
 	if (imported === 'default') {
 		if (!isChunk) {
-			const moduleInterop = String(interop(moduleId));
+			const moduleInterop = interop(moduleId);
 			const variableName = defaultInteropHelpersByInteropType[moduleInterop]
 				? defaultVariableName
 				: moduleVariableName;
 			return isDefaultAProperty(moduleInterop, externalLiveBindings)
-				? `${variableName}['default']`
+				? `${variableName}${getPropertyAccess('default')}`
 				: variableName;
 		}
-		return depNamedExportsMode ? `${moduleVariableName}['default']` : moduleVariableName;
+		return depNamedExportsMode
+			? `${moduleVariableName}${getPropertyAccess('default')}`
+			: moduleVariableName;
 	}
 	if (imported === '*') {
 		return (
-			isChunk
-				? !depNamedExportsMode
-				: namespaceInteropHelpersByInteropType[String(interop(moduleId))]
+			isChunk ? !depNamedExportsMode : namespaceInteropHelpersByInteropType[interop(moduleId)]
 		)
 			? namespaceVariableName
 			: moduleVariableName;
 	}
-	return `${moduleVariableName}.${imported}`;
+	return `${moduleVariableName}${getPropertyAccess(imported)}`;
 }
 
-function getEsModuleExport(_: string): string {
-	return `Object.defineProperty(exports,${_}'__esModule',${_}{${_}value:${_}true${_}});`;
-}
-
-function getNamespaceToStringExport(_: string): string {
-	return `exports[Symbol.toStringTag]${_}=${_}'Module';`;
+function getEsModuleValue(getObject: GenerateCodeSnippets['getObject']) {
+	return getObject([['value', 'true']], {
+		lineBreakIndent: null
+	});
 }
 
 export function getNamespaceMarkers(
 	hasNamedExports: boolean,
 	addEsModule: boolean,
 	addNamespaceToStringTag: boolean,
-	_: string,
-	n: string
+	{ _, getObject }: GenerateCodeSnippets
 ): string {
-	let namespaceMarkers = '';
 	if (hasNamedExports) {
 		if (addEsModule) {
-			namespaceMarkers += getEsModuleExport(_);
+			if (addNamespaceToStringTag) {
+				return `Object.defineProperties(exports,${_}${getObject(
+					[
+						['__esModule', getEsModuleValue(getObject)],
+						[null, `[Symbol.toStringTag]:${_}${getToStringTagValue(getObject)}`]
+					],
+					{
+						lineBreakIndent: null
+					}
+				)});`;
+			}
+			return `Object.defineProperty(exports,${_}'__esModule',${_}${getEsModuleValue(getObject)});`;
 		}
 		if (addNamespaceToStringTag) {
-			if (namespaceMarkers) {
-				namespaceMarkers += n;
-			}
-			namespaceMarkers += getNamespaceToStringExport(_);
+			return `Object.defineProperty(exports,${_}Symbol.toStringTag,${_}${getToStringTagValue(
+				getObject
+			)});`;
 		}
 	}
-	return namespaceMarkers;
+	return '';
 }
+
+const getDefineProperty = (
+	name: string,
+	needsLiveBinding: boolean,
+	t: string,
+	{ _, getDirectReturnFunction, n }: GenerateCodeSnippets
+) => {
+	if (needsLiveBinding) {
+		const [left, right] = getDirectReturnFunction([], {
+			functionReturn: true,
+			lineBreakIndent: null,
+			name: null
+		});
+		return (
+			`Object.defineProperty(exports,${_}k,${_}{${n}` +
+			`${t}${t}enumerable:${_}true,${n}` +
+			`${t}${t}get:${_}${left}${name}[k]${right}${n}${t}})`
+		);
+	}
+	return `exports[k]${_}=${_}${name}[k]`;
+};

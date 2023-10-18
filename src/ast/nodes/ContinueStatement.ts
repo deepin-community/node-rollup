@@ -1,35 +1,32 @@
-import {
-	BROKEN_FLOW_BREAK_CONTINUE,
-	BROKEN_FLOW_ERROR_RETURN_LABEL,
-	HasEffectsContext,
-	InclusionContext
-} from '../ExecutionContext';
-import Identifier from './Identifier';
-import * as NodeType from './NodeType';
+import { type HasEffectsContext, type InclusionContext } from '../ExecutionContext';
+import type Identifier from './Identifier';
+import type * as NodeType from './NodeType';
 import { StatementBase } from './shared/Node';
 
 export default class ContinueStatement extends StatementBase {
-	label!: Identifier | null;
-	type!: NodeType.tContinueStatement;
+	declare label: Identifier | null;
+	declare type: NodeType.tContinueStatement;
 
-	hasEffects(context: HasEffectsContext) {
+	hasEffects(context: HasEffectsContext): boolean {
 		if (this.label) {
 			if (!context.ignore.labels.has(this.label.name)) return true;
 			context.includedLabels.add(this.label.name);
-			context.brokenFlow = BROKEN_FLOW_ERROR_RETURN_LABEL;
 		} else {
 			if (!context.ignore.continues) return true;
-			context.brokenFlow = BROKEN_FLOW_BREAK_CONTINUE;
+			context.hasContinue = true;
 		}
+		context.brokenFlow = true;
 		return false;
 	}
 
-	include(context: InclusionContext) {
+	include(context: InclusionContext): void {
 		this.included = true;
 		if (this.label) {
 			this.label.include();
 			context.includedLabels.add(this.label.name);
+		} else {
+			context.hasContinue = true;
 		}
-		context.brokenFlow = this.label ? BROKEN_FLOW_ERROR_RETURN_LABEL : BROKEN_FLOW_BREAK_CONTINUE;
+		context.brokenFlow = true;
 	}
 }

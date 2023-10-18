@@ -1,6 +1,4 @@
-const path = require('path');
-
-module.exports = {
+module.exports = defineTest({
 	description: 'throws when trying to set the asset source of a chunk',
 	options: {
 		plugins: {
@@ -16,7 +14,6 @@ module.exports = {
 		hook: 'buildStart',
 		message: 'Asset sources can only be set for emitted assets but "6c87f683" is an emitted chunk.',
 		plugin: 'test-plugin',
-		pluginCode: 'VALIDATION_ERROR',
-		watchFiles: [path.join(__dirname, 'chunk.js')]
+		pluginCode: 'VALIDATION_ERROR'
 	}
-};
+});

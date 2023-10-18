@@ -1,11 +1,11 @@
-import { AstContext } from '../../Module';
+import type { AstContext } from '../../Module';
 import ClassDeclaration from '../nodes/ClassDeclaration';
-import ExportDefaultDeclaration from '../nodes/ExportDefaultDeclaration';
+import type ExportDefaultDeclaration from '../nodes/ExportDefaultDeclaration';
 import FunctionDeclaration from '../nodes/FunctionDeclaration';
-import Identifier, { IdentifierWithVariable } from '../nodes/Identifier';
+import Identifier, { type IdentifierWithVariable } from '../nodes/Identifier';
 import LocalVariable from './LocalVariable';
 import UndefinedVariable from './UndefinedVariable';
-import Variable from './Variable';
+import type Variable from './Variable';
 
 export default class ExportDefaultVariable extends LocalVariable {
 	hasId = false;
@@ -31,9 +31,18 @@ export default class ExportDefaultVariable extends LocalVariable {
 		}
 	}
 
-	addReference(identifier: Identifier) {
+	addReference(identifier: Identifier): void {
 		if (!this.hasId) {
 			this.name = identifier.name;
+		}
+	}
+
+	forbidName(name: string) {
+		const original = this.getOriginalVariable();
+		if (original === this) {
+			super.forbidName(name);
+		} else {
+			original.forbidName(name);
 		}
 	}
 
@@ -43,17 +52,14 @@ export default class ExportDefaultVariable extends LocalVariable {
 
 	getBaseVariableName(): string {
 		const original = this.getOriginalVariable();
-		if (original === this) {
-			return super.getBaseVariableName();
-		} else {
-			return original.getBaseVariableName();
-		}
+		return original === this ? super.getBaseVariableName() : original.getBaseVariableName();
 	}
 
 	getDirectOriginalVariable(): Variable | null {
 		return this.originalId &&
 			(this.hasId ||
 				!(
+					this.originalId.isPossibleTDZ() ||
 					this.originalId.variable.isReassigned ||
 					this.originalId.variable instanceof UndefinedVariable ||
 					// this avoids a circular dependency
@@ -63,17 +69,16 @@ export default class ExportDefaultVariable extends LocalVariable {
 			: null;
 	}
 
-	getName() {
+	getName(getPropertyAccess: (name: string) => string): string {
 		const original = this.getOriginalVariable();
-		if (original === this) {
-			return super.getName();
-		} else {
-			return original.getName();
-		}
+		return original === this
+			? super.getName(getPropertyAccess)
+			: original.getName(getPropertyAccess);
 	}
 
 	getOriginalVariable(): Variable {
 		if (this.originalVariable) return this.originalVariable;
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let original: Variable | null = this;
 		let currentVariable: Variable;
 		const checkedVariables = new Set<Variable>();

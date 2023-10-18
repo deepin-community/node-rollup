@@ -1,4 +1,4 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
 	var aExp = {};
 	var logicalAExp = aExp || {};
@@ -16,6 +16,4 @@ define(['exports'], function (exports) { 'use strict';
 	exports.bExp = bExp;
 	exports.cExp = cExp;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

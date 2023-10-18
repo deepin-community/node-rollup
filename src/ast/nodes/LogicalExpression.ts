@@ -1,73 +1,77 @@
-import MagicString from 'magic-string';
-import { BLANK } from '../../utils/blank';
+import type MagicString from 'magic-string';
+import { BLANK, EMPTY_ARRAY } from '../../utils/blank';
 import {
 	findFirstOccurrenceOutsideComment,
 	findNonWhiteSpace,
-	NodeRenderOptions,
+	type NodeRenderOptions,
 	removeLineBreaks,
-	RenderOptions
+	type RenderOptions
 } from '../../utils/renderHelpers';
 import { removeAnnotations } from '../../utils/treeshakeNode';
-import { CallOptions } from '../CallOptions';
-import { DeoptimizableEntity } from '../DeoptimizableEntity';
-import { HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type { DeoptimizableEntity } from '../DeoptimizableEntity';
+import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type { NodeInteraction, NodeInteractionCalled } from '../NodeInteractions';
 import {
 	EMPTY_PATH,
-	ObjectPath,
-	PathTracker,
+	type ObjectPath,
+	type PathTracker,
 	SHARED_RECURSION_TRACKER,
 	UNKNOWN_PATH
 } from '../utils/PathTracker';
-import { LiteralValueOrUnknown, UnknownValue } from '../values';
-import CallExpression from './CallExpression';
-import * as NodeType from './NodeType';
-import { ExpressionEntity } from './shared/Expression';
+import type * as NodeType from './NodeType';
+import {
+	type ExpressionEntity,
+	type LiteralValueOrUnknown,
+	UnknownValue
+} from './shared/Expression';
 import { MultiExpression } from './shared/MultiExpression';
-import { ExpressionNode, IncludeChildren, NodeBase } from './shared/Node';
+import { type ExpressionNode, type IncludeChildren, NodeBase } from './shared/Node';
 
 export type LogicalOperator = '||' | '&&' | '??';
 
 export default class LogicalExpression extends NodeBase implements DeoptimizableEntity {
-	left!: ExpressionNode;
-	operator!: LogicalOperator;
-	right!: ExpressionNode;
-	type!: NodeType.tLogicalExpression;
+	declare left: ExpressionNode;
+	declare operator: LogicalOperator;
+	declare right: ExpressionNode;
+	declare type: NodeType.tLogicalExpression;
 
 	// We collect deoptimization information if usedBranch !== null
 	private expressionsToBeDeoptimized: DeoptimizableEntity[] = [];
 	private isBranchResolutionAnalysed = false;
-	private unusedBranch: ExpressionNode | null = null;
 	private usedBranch: ExpressionNode | null = null;
-	private wasPathDeoptimizedWhileOptimized = false;
 
-	bind() {
-		super.bind();
-		// ensure the usedBranch is set for the tree-shaking passes
-		this.getUsedBranch();
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
+		path: ObjectPath,
+		recursionTracker: PathTracker
+	): void {
+		this.left.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+		this.right.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
 	}
 
-	deoptimizeCache() {
-		if (this.usedBranch !== null) {
+	deoptimizeCache(): void {
+		if (this.usedBranch) {
+			const unusedBranch = this.usedBranch === this.left ? this.right : this.left;
 			this.usedBranch = null;
-			const expressionsToBeDeoptimized = this.expressionsToBeDeoptimized;
-			this.expressionsToBeDeoptimized = [];
-			if (this.wasPathDeoptimizedWhileOptimized) {
-				this.unusedBranch!.deoptimizePath(UNKNOWN_PATH);
-			}
+			unusedBranch.deoptimizePath(UNKNOWN_PATH);
+			const { context, expressionsToBeDeoptimized } = this;
+			this.expressionsToBeDeoptimized = EMPTY_ARRAY as unknown as DeoptimizableEntity[];
 			for (const expression of expressionsToBeDeoptimized) {
 				expression.deoptimizeCache();
 			}
+			// Request another pass because we need to ensure "include" runs again if
+			// it is rendered
+			context.requestTreeshakingPass();
 		}
 	}
 
-	deoptimizePath(path: ObjectPath) {
+	deoptimizePath(path: ObjectPath): void {
 		const usedBranch = this.getUsedBranch();
-		if (usedBranch === null) {
+		if (usedBranch) {
+			usedBranch.deoptimizePath(path);
+		} else {
 			this.left.deoptimizePath(path);
 			this.right.deoptimizePath(path);
-		} else {
-			this.wasPathDeoptimizedWhileOptimized = true;
-			usedBranch.deoptimizePath(path);
 		}
 	}
 
@@ -77,91 +81,95 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
 		origin: DeoptimizableEntity
 	): LiteralValueOrUnknown {
 		const usedBranch = this.getUsedBranch();
-		if (usedBranch === null) return UnknownValue;
+		if (!usedBranch) return UnknownValue;
 		this.expressionsToBeDeoptimized.push(origin);
 		return usedBranch.getLiteralValueAtPath(path, recursionTracker, origin);
 	}
 
 	getReturnExpressionWhenCalledAtPath(
 		path: ObjectPath,
+		interaction: NodeInteractionCalled,
 		recursionTracker: PathTracker,
 		origin: DeoptimizableEntity
-	): ExpressionEntity {
+	): [expression: ExpressionEntity, isPure: boolean] {
 		const usedBranch = this.getUsedBranch();
-		if (usedBranch === null)
-			return new MultiExpression([
-				this.left.getReturnExpressionWhenCalledAtPath(path, recursionTracker, origin),
-				this.right.getReturnExpressionWhenCalledAtPath(path, recursionTracker, origin)
-			]);
+		if (!usedBranch)
+			return [
+				new MultiExpression([
+					this.left.getReturnExpressionWhenCalledAtPath(
+						path,
+						interaction,
+						recursionTracker,
+						origin
+					)[0],
+					this.right.getReturnExpressionWhenCalledAtPath(
+						path,
+						interaction,
+						recursionTracker,
+						origin
+					)[0]
+				]),
+				false
+			];
 		this.expressionsToBeDeoptimized.push(origin);
-		return usedBranch.getReturnExpressionWhenCalledAtPath(path, recursionTracker, origin);
+		return usedBranch.getReturnExpressionWhenCalledAtPath(
+			path,
+			interaction,
+			recursionTracker,
+			origin
+		);
 	}
 
 	hasEffects(context: HasEffectsContext): boolean {
 		if (this.left.hasEffects(context)) {
 			return true;
 		}
-		if (this.usedBranch !== this.left) {
+		if (this.getUsedBranch() !== this.left) {
 			return this.right.hasEffects(context);
 		}
 		return false;
 	}
 
-	hasEffectsWhenAccessedAtPath(path: ObjectPath, context: HasEffectsContext): boolean {
-		if (path.length === 0) return false;
-		if (this.usedBranch === null) {
-			return (
-				this.left.hasEffectsWhenAccessedAtPath(path, context) ||
-				this.right.hasEffectsWhenAccessedAtPath(path, context)
-			);
-		}
-		return this.usedBranch.hasEffectsWhenAccessedAtPath(path, context);
-	}
-
-	hasEffectsWhenAssignedAtPath(path: ObjectPath, context: HasEffectsContext): boolean {
-		if (path.length === 0) return true;
-		if (this.usedBranch === null) {
-			return (
-				this.left.hasEffectsWhenAssignedAtPath(path, context) ||
-				this.right.hasEffectsWhenAssignedAtPath(path, context)
-			);
-		}
-		return this.usedBranch.hasEffectsWhenAssignedAtPath(path, context);
-	}
-
-	hasEffectsWhenCalledAtPath(
+	hasEffectsOnInteractionAtPath(
 		path: ObjectPath,
-		callOptions: CallOptions,
+		interaction: NodeInteraction,
 		context: HasEffectsContext
 	): boolean {
-		if (this.usedBranch === null) {
+		const usedBranch = this.getUsedBranch();
+		if (!usedBranch) {
 			return (
-				this.left.hasEffectsWhenCalledAtPath(path, callOptions, context) ||
-				this.right.hasEffectsWhenCalledAtPath(path, callOptions, context)
+				this.left.hasEffectsOnInteractionAtPath(path, interaction, context) ||
+				this.right.hasEffectsOnInteractionAtPath(path, interaction, context)
 			);
 		}
-		return this.usedBranch.hasEffectsWhenCalledAtPath(path, callOptions, context);
+		return usedBranch.hasEffectsOnInteractionAtPath(path, interaction, context);
 	}
 
-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
 		this.included = true;
+		const usedBranch = this.getUsedBranch();
 		if (
 			includeChildrenRecursively ||
-			(this.usedBranch === this.right && this.left.shouldBeIncluded(context)) ||
-			this.usedBranch === null
+			(usedBranch === this.right && this.left.shouldBeIncluded(context)) ||
+			!usedBranch
 		) {
 			this.left.include(context, includeChildrenRecursively);
 			this.right.include(context, includeChildrenRecursively);
 		} else {
-			this.usedBranch.include(context, includeChildrenRecursively);
+			usedBranch.include(context, includeChildrenRecursively);
 		}
 	}
 
 	render(
 		code: MagicString,
 		options: RenderOptions,
-		{ renderedParentType, isCalleeOfRenderedParent, preventASI }: NodeRenderOptions = BLANK
-	) {
+		{
+			isCalleeOfRenderedParent,
+			preventASI,
+			renderedParentType,
+			renderedSurroundingElement
+		}: NodeRenderOptions = BLANK
+	): void {
 		if (!this.left.included || !this.right.included) {
 			const operatorPos = findFirstOccurrenceOutsideComment(
 				code.original,
@@ -178,15 +186,17 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
 				code.remove(operatorPos, this.end);
 			}
 			removeAnnotations(this, code);
-			this.usedBranch!.render(code, options, {
-				isCalleeOfRenderedParent: renderedParentType
-					? isCalleeOfRenderedParent
-					: (this.parent as CallExpression).callee === this,
+			this.getUsedBranch()!.render(code, options, {
+				isCalleeOfRenderedParent,
 				preventASI,
-				renderedParentType: renderedParentType || this.parent.type
+				renderedParentType: renderedParentType || this.parent.type,
+				renderedSurroundingElement: renderedSurroundingElement || this.parent.type
 			});
 		} else {
-			this.left.render(code, options, { preventASI });
+			this.left.render(code, options, {
+				preventASI,
+				renderedSurroundingElement
+			});
 			this.right.render(code, options);
 		}
 	}
@@ -195,20 +205,15 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
 		if (!this.isBranchResolutionAnalysed) {
 			this.isBranchResolutionAnalysed = true;
 			const leftValue = this.left.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this);
-			if (leftValue === UnknownValue) {
+			if (typeof leftValue === 'symbol') {
 				return null;
 			} else {
-				if (
+				this.usedBranch =
 					(this.operator === '||' && leftValue) ||
 					(this.operator === '&&' && !leftValue) ||
 					(this.operator === '??' && leftValue != null)
-				) {
-					this.usedBranch = this.left;
-					this.unusedBranch = this.right;
-				} else {
-					this.usedBranch = this.right;
-					this.unusedBranch = this.left;
-				}
+						? this.left
+						: this.right;
 			}
 		}
 		return this.usedBranch;

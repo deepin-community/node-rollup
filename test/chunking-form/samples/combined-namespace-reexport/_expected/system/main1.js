@@ -1,21 +1,21 @@
-System.register(['./generated-geometry.js'], function () {
+System.register(['./generated-geometry.js'], (function () {
 	'use strict';
-	var volume, geometry;
+	var geometry, volume;
 	return {
 		setters: [function (module) {
-			volume = module.v;
 			geometry = module.g;
+			volume = module.v;
 		}],
-		execute: function () {
+		execute: (function () {
 
 			var mod = /*#__PURE__*/Object.freeze({
 				__proto__: null,
-				volume: volume,
-				geometry: geometry
+				geometry: geometry,
+				volume: volume
 			});
 
 			console.log(mod);
 
-		}
+		})
 	};
-});
+}));

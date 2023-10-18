@@ -1,4 +1,4 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
 	const exports$1 = 1;
 	const require = 2;
@@ -12,6 +12,4 @@ define(['exports'], function (exports) { 'use strict';
 	exports.module = module;
 	exports.require = require;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

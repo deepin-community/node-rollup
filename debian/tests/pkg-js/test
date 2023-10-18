@@ -28,4 +28,4 @@ HERE
 $ROLLUP main.js -f cjs > bundle.js
 node -e "require('./bundle.js')();"
 rm -f ./bundle.js ./main.js ./foo.js
-rm -f node_modules/rollup
+rm -f node_modules/rollup || true

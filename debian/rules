@@ -5,10 +5,19 @@
 	dh $@
 
 override_dh_auto_build:
-	rollup -c
+ifeq (,$(filter pkg.node-rollup.npm,$(DEB_BUILD_OPTIONS) $(DEB_BUILD_PROFILES)))
+	rollup --config rollup.config.ts --configPlugin typescript
 	cp src/rollup/types.d.ts dist/rollup.d.ts
 	chmod +x dist/bin/rollup
+else
+	@echo "### Build with npm ###"
+	rm -rf node_modules
+	HOME=/tmp npm ci --ignore-scripts
+	HOME=/tmp npm run build
+endif
 	marked-man --version $$(grep version package.json | cut -d\" -f4) --gfm --breaks cli/help.md -o rollup.1
+	# No need to embed (big) maps
+	find dist -name '*.map' -delete
 
 override_dh_fixperms:
 	dh_fixperms

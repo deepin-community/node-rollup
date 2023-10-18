@@ -1,22 +1,47 @@
 Description: search module also in Debian directories
 Author: Xavier Guimard <yadd@debian.org>
 Forwarded: not-needed
-Last-Update: 2021-01-29
+Last-Update: 2023-01-31
 
---- a/rollup.config.js
-+++ b/rollup.config.js
-@@ -59,9 +59,13 @@
- 	tryCatchDeoptimization: false
- };
+--- a/build-plugins/aliases.ts
++++ b/build-plugins/aliases.ts
+@@ -2,7 +2,7 @@
+ 
+ export const moduleAliases = {
+ 	entries: {
+-		acorn: fileURLToPath(new URL('../node_modules/acorn/dist/acorn.mjs', import.meta.url)),
++		acorn: fileURLToPath(new URL('/usr/share/nodejs/acorn/dist/acorn.mjs', import.meta.url)),
+ 		'help.md': fileURLToPath(new URL('../cli/help.md', import.meta.url)),
+ 		'package.json': fileURLToPath(new URL('../package.json', import.meta.url))
+ 	},
+--- a/rollup.config.ts
++++ b/rollup.config.ts
+@@ -19,6 +19,10 @@
+ import getBanner from './build-plugins/get-banner';
+ import replaceBrowserModules from './build-plugins/replace-browser-modules';
  
 +const resOpt = {
-+  moduleDirectories: ['./node_modules','/usr/lib/nodejs','/usr/share/nodejs','debian/build_modules']
++  modulePaths: ['./node_modules', 'debian/build_modules'], preferBuiltins: true,
 +};
 +
- const nodePlugins = [
+ const onwarn: WarningHandlerWithDefault = warning => {
+ 	// eslint-disable-next-line no-console
+ 	console.error(
+@@ -38,7 +42,7 @@
+ const nodePlugins: readonly Plugin[] = [
+ 	replace(fsEventsReplacement),
  	alias(moduleAliases),
--	resolve(),
-+	resolve(resOpt),
+-	nodeResolve(),
++	nodeResolve(resOpt),
  	json(),
  	string({ include: '**/*.md' }),
- 	commonjs({ include: 'node_modules/**' }),
+ 	commonjs({
+@@ -132,7 +136,7 @@
+ 		plugins: [
+ 			replaceBrowserModules(),
+ 			alias(moduleAliases),
+-			nodeResolve({ browser: true }),
++			nodeResolve({ ...resOpt, browser: true }),
+ 			json(),
+ 			commonjs(),
+ 			typescript(),

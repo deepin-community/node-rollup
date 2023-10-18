@@ -1,4 +1,4 @@
-System.register(['./m2.js', './m3.js'], function (exports) {
+System.register(['./m2.js', './m3.js'], (function (exports) {
 	'use strict';
 	return {
 		setters: [function (module) {
@@ -6,10 +6,10 @@ System.register(['./m2.js', './m3.js'], function (exports) {
 		}, function (module) {
 			exports('m3', module.default);
 		}],
-		execute: function () {
+		execute: (function () {
 
 
 
-		}
+		})
 	};
-});
+}));

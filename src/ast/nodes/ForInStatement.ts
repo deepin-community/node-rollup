@@ -1,63 +1,53 @@
-import MagicString from 'magic-string';
-import { NO_SEMICOLON, RenderOptions } from '../../utils/renderHelpers';
-import { HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type MagicString from 'magic-string';
+import { NO_SEMICOLON, type RenderOptions } from '../../utils/renderHelpers';
+import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
 import BlockScope from '../scopes/BlockScope';
-import Scope from '../scopes/Scope';
+import type Scope from '../scopes/Scope';
 import { EMPTY_PATH } from '../utils/PathTracker';
-import * as NodeType from './NodeType';
-import { ExpressionNode, IncludeChildren, StatementBase, StatementNode } from './shared/Node';
-import { PatternNode } from './shared/Pattern';
-import VariableDeclaration from './VariableDeclaration';
+import type MemberExpression from './MemberExpression';
+import type * as NodeType from './NodeType';
+import type VariableDeclaration from './VariableDeclaration';
+import { UNKNOWN_EXPRESSION } from './shared/Expression';
+import {
+	type ExpressionNode,
+	type IncludeChildren,
+	StatementBase,
+	type StatementNode
+} from './shared/Node';
+import type { PatternNode } from './shared/Pattern';
+import { hasLoopBodyEffects, includeLoopBody } from './shared/loops';
 
 export default class ForInStatement extends StatementBase {
-	body!: StatementNode;
-	left!: VariableDeclaration | PatternNode;
-	right!: ExpressionNode;
-	type!: NodeType.tForInStatement;
+	declare body: StatementNode;
+	declare left: VariableDeclaration | PatternNode | MemberExpression;
+	declare right: ExpressionNode;
+	declare type: NodeType.tForInStatement;
 
-	bind() {
-		this.left.bind();
-		this.left.deoptimizePath(EMPTY_PATH);
-		this.right.bind();
-		this.body.bind();
-	}
-
-	createScope(parentScope: Scope) {
+	createScope(parentScope: Scope): void {
 		this.scope = new BlockScope(parentScope);
 	}
 
 	hasEffects(context: HasEffectsContext): boolean {
-		if (
-			(this.left &&
-				(this.left.hasEffects(context) ||
-					this.left.hasEffectsWhenAssignedAtPath(EMPTY_PATH, context))) ||
-			(this.right && this.right.hasEffects(context))
-		)
-			return true;
-		const {
-			brokenFlow,
-			ignore: { breaks, continues }
-		} = context;
-		context.ignore.breaks = true;
-		context.ignore.continues = true;
-		if (this.body.hasEffects(context)) return true;
-		context.ignore.breaks = breaks;
-		context.ignore.continues = continues;
-		context.brokenFlow = brokenFlow;
-		return false;
+		const { body, deoptimized, left, right } = this;
+		if (!deoptimized) this.applyDeoptimizations();
+		if (left.hasEffectsAsAssignmentTarget(context, false) || right.hasEffects(context)) return true;
+		return hasLoopBodyEffects(context, body);
 	}
 
-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+		const { body, deoptimized, left, right } = this;
+		if (!deoptimized) this.applyDeoptimizations();
 		this.included = true;
-		this.left.include(context, includeChildrenRecursively || true);
-		this.left.deoptimizePath(EMPTY_PATH);
-		this.right.include(context, includeChildrenRecursively);
-		const { brokenFlow } = context;
-		this.body.includeAsSingleStatement(context, includeChildrenRecursively);
-		context.brokenFlow = brokenFlow;
+		left.includeAsAssignmentTarget(context, includeChildrenRecursively || true, false);
+		right.include(context, includeChildrenRecursively);
+		includeLoopBody(context, body, includeChildrenRecursively);
 	}
 
-	render(code: MagicString, options: RenderOptions) {
+	initialise() {
+		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
+	}
+
+	render(code: MagicString, options: RenderOptions): void {
 		this.left.render(code, options, NO_SEMICOLON);
 		this.right.render(code, options, NO_SEMICOLON);
 		// handle no space between "in" and the right side
@@ -65,5 +55,11 @@ export default class ForInStatement extends StatementBase {
 			code.prependLeft(this.right.start, ' ');
 		}
 		this.body.render(code, options);
+	}
+
+	protected applyDeoptimizations(): void {
+		this.deoptimized = true;
+		this.left.deoptimizePath(EMPTY_PATH);
+		this.context.requestTreeshakingPass();
 	}
 }

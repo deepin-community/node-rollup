@@ -1,4 +1,4 @@
-module.exports = {
+module.exports = defineTest({
 	description: 'resolver error is not caught',
 	options: {
 		plugins: [
@@ -11,7 +11,7 @@ module.exports = {
 				}
 			},
 			{
-				resolveId(importee, importer) {
+				resolveId() {
 					return 'main';
 				}
 			}
@@ -23,4 +23,4 @@ module.exports = {
 		message: 'nope',
 		plugin: 'at position 1'
 	}
-};
+});

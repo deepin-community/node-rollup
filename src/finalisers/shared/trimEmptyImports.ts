@@ -1,12 +1,14 @@
-import { ModuleDeclarationDependency } from '../../Chunk';
+import type { ChunkDependency } from '../../Chunk';
 
-export default function trimEmptyImports(dependencies: ModuleDeclarationDependency[]) {
-	let i = dependencies.length;
+export default function trimEmptyImports(
+	dependencies: readonly ChunkDependency[]
+): ChunkDependency[] {
+	let index = dependencies.length;
 
-	while (i--) {
-		const { imports, reexports } = dependencies[i];
+	while (index--) {
+		const { imports, reexports } = dependencies[index];
 		if (imports || reexports) {
-			return dependencies.slice(0, i + 1);
+			return dependencies.slice(0, index + 1);
 		}
 	}
 

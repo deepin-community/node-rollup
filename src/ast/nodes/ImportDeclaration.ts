@@ -1,31 +1,36 @@
-import MagicString from 'magic-string';
-import { NodeRenderOptions, RenderOptions } from '../../utils/renderHelpers';
-import ImportDefaultSpecifier from './ImportDefaultSpecifier';
-import ImportNamespaceSpecifier from './ImportNamespaceSpecifier';
-import ImportSpecifier from './ImportSpecifier';
-import Literal from './Literal';
-import * as NodeType from './NodeType';
+import type MagicString from 'magic-string';
+import type { NodeRenderOptions, RenderOptions } from '../../utils/renderHelpers';
+import type ImportAttribute from './ImportAttribute';
+import type ImportDefaultSpecifier from './ImportDefaultSpecifier';
+import type ImportNamespaceSpecifier from './ImportNamespaceSpecifier';
+import type ImportSpecifier from './ImportSpecifier';
+import type Literal from './Literal';
+import type * as NodeType from './NodeType';
 import { NodeBase } from './shared/Node';
 
 export default class ImportDeclaration extends NodeBase {
-	needsBoundaries!: true;
-	source!: Literal<string>;
-	specifiers!: (ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier)[];
-	type!: NodeType.tImportDeclaration;
+	declare assertions?: ImportAttribute[];
+	declare needsBoundaries: true;
+	declare source: Literal<string>;
+	declare specifiers: (ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier)[];
+	declare type: NodeType.tImportDeclaration;
 
-	bind() {}
+	// Do not bind specifiers or assertions
+	bind(): void {}
 
-	hasEffects() {
+	hasEffects(): boolean {
 		return false;
 	}
 
-	initialise() {
+	initialise(): void {
 		this.context.addImport(this);
 	}
 
-	render(code: MagicString, _options: RenderOptions, nodeRenderOptions?: NodeRenderOptions) {
+	render(code: MagicString, _options: RenderOptions, nodeRenderOptions?: NodeRenderOptions): void {
 		code.remove(nodeRenderOptions!.start!, nodeRenderOptions!.end!);
 	}
+
+	protected applyDeoptimizations() {}
 }
 
 ImportDeclaration.prototype.needsBoundaries = true;

@@ -1,21 +1,22 @@
 Description: Help md format fixes
  These changes are useful to make a nicer man page
 Forwarded: not-needed
+Reviewed-By: Yadd <yadd@debian.org>
+Last-Update: 2022-04-28
 
 --- a/cli/help.md
 +++ b/cli/help.md
-@@ -1,9 +1,16 @@
- rollup version __VERSION__
- =====================================
- 
--Usage: rollup [options] <entry file>
+@@ -1,9 +1,13 @@
+-rollup version __VERSION__
+-=====================================
 +rollup(1) -- module bundler for JavaScript
 +=========================================================
  
--Basic options:
+-Usage: rollup [options] <entry file>
 +SYNOPSIS
 +--------
-+
+ 
+-Basic options:
 +rollup [options] <entry file>
 +
 +OPTIONS
@@ -23,9 +24,9 @@ Forwarded: not-needed
  
  -c, --config <filename>     Use this config file (if argument is used but value
                                is unspecified, defaults to rollup.config.js)
-@@ -74,24 +81,34 @@
- --watch.include <files>     Limit watching to specified files
- --validate                  Validate output
+@@ -95,24 +99,34 @@
+ --watch.onStart <cmd>       Shell command to run on `"START"` event
+ --watch.skipWrite           Do not write files to disk when watching
  
 -Examples:
 +EXAMPLES

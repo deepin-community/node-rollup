@@ -1,4 +1,4 @@
-System.register(['./dep2.js'], function (exports) {
+System.register(['./dep2.js'], (function (exports) {
 	'use strict';
 	var foo;
 	return {
@@ -6,10 +6,10 @@ System.register(['./dep2.js'], function (exports) {
 			foo = module.default;
 			exports('default', module.default);
 		}],
-		execute: function () {
+		execute: (function () {
 
 
 
-		}
+		})
 	};
-});
+}));
