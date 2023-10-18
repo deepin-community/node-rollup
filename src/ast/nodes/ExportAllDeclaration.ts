@@ -1,27 +1,31 @@
-import MagicString from 'magic-string';
-import { NodeRenderOptions, RenderOptions } from '../../utils/renderHelpers';
-import Identifier from './Identifier';
-import Literal from './Literal';
-import * as NodeType from './NodeType';
+import type MagicString from 'magic-string';
+import type { NodeRenderOptions, RenderOptions } from '../../utils/renderHelpers';
+import type Identifier from './Identifier';
+import type ImportAttribute from './ImportAttribute';
+import type Literal from './Literal';
+import type * as NodeType from './NodeType';
 import { NodeBase } from './shared/Node';
 
 export default class ExportAllDeclaration extends NodeBase {
-	exported!: Identifier | null;
-	needsBoundaries!: true;
-	source!: Literal<string>;
-	type!: NodeType.tExportAllDeclaration;
+	declare assertions: ImportAttribute[];
+	declare exported: Identifier | null;
+	declare needsBoundaries: true;
+	declare source: Literal<string>;
+	declare type: NodeType.tExportAllDeclaration;
 
-	hasEffects() {
+	hasEffects(): boolean {
 		return false;
 	}
 
-	initialise() {
+	initialise(): void {
 		this.context.addExport(this);
 	}
 
-	render(code: MagicString, _options: RenderOptions, nodeRenderOptions?: NodeRenderOptions) {
+	render(code: MagicString, _options: RenderOptions, nodeRenderOptions?: NodeRenderOptions): void {
 		code.remove(nodeRenderOptions!.start!, nodeRenderOptions!.end!);
 	}
+
+	protected applyDeoptimizations() {}
 }
 
 ExportAllDeclaration.prototype.needsBoundaries = true;

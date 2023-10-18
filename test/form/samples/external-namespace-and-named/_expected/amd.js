@@ -1,7 +1,6 @@
-define(['foo'], function (foo) { 'use strict';
+define(['foo'], (function (foo) { 'use strict';
 
-	function _interopNamespace(e) {
-		if (e && e.__esModule) return e;
+	function _interopNamespaceDefault(e) {
 		var n = Object.create(null);
 		if (e) {
 			Object.keys(e).forEach(function (k) {
@@ -9,21 +8,19 @@ define(['foo'], function (foo) { 'use strict';
 					var d = Object.getOwnPropertyDescriptor(e, k);
 					Object.defineProperty(n, k, d.get ? d : {
 						enumerable: true,
-						get: function () {
-							return e[k];
-						}
+						get: function () { return e[k]; }
 					});
 				}
 			});
 		}
-		n['default'] = e;
+		n.default = e;
 		return Object.freeze(n);
 	}
 
-	var foo__namespace = /*#__PURE__*/_interopNamespace(foo);
+	var foo__namespace = /*#__PURE__*/_interopNamespaceDefault(foo);
 
 	console.log(foo__namespace);
 	console.log(foo.blah);
 	console.log(foo.bar);
 
-});
+}));

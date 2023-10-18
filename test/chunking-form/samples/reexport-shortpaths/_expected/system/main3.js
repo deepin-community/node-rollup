@@ -1,11 +1,11 @@
-System.register(['./generated-dep2.js'], function () {
+System.register(['./main2.js'], (function () {
 	'use strict';
 	return {
-		setters: [function () {}],
-		execute: function () {
+		setters: [null],
+		execute: (function () {
 
 
 
-		}
+		})
 	};
-});
+}));

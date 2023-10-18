@@ -1,0 +1,31 @@
+#!/bin/sh
+
+rm -rf \
+	test/cli/samples/multiple-targets-different-plugins \
+	test/chunking-form/samples/deprecated/preserve-modules-commonjs \
+	test/chunking-form/samples/preserve-modules-commonjs \
+	test/chunking-form/samples/preserve-modules-root \
+	test/cli/samples/config-mjs-plugins \
+	test/cli/samples/plugin/advanced-esm \
+	test/cli/samples/stdin/commonjs \
+	test/form/samples/class-method-access \
+	test/form/samples/literals-from-class-statics \
+	test/form/samples/supports-core-js \
+	test/form/samples/supports-es5-shim \
+	test/form/samples/supports-es6-shim \
+	test/form/samples/this-in-class-body \
+	test/form/samples/treeshake-classes-with-fields \
+	test/cli/samples/watch \
+	test/function/samples/track-reassignments \
+	test/form/samples/deoptimize-superclass
+
+pkgjs-utils link_internal_modules
+pkgjs-utils link_test_modules
+for i in es6-shim fast-diff find-up fs-extra functional-red-black-tree micromatch minimatch minimist mkdirp mocha moment regexpp requirejs resolve rollup rollup-plugin-string @rollup/plugin-replace rollup-plugin-terser rxjs wrap-ansi @rollup/plugin-buble; do
+	pkgjs-ln $i
+done
+ln -s /usr/share/nodejs/rollup/dist
+
+set -e
+
+mocha test/test.js

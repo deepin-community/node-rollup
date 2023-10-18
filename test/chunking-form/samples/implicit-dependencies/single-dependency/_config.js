@@ -1,11 +1,11 @@
-const path = require('path');
-const assert = require('assert');
+const assert = require('node:assert');
+const path = require('node:path');
 
 const ID_MAIN = path.join(__dirname, 'main.js');
 const ID_LIB = path.join(__dirname, 'lib.js');
 const ID_DEP = path.join(__dirname, 'dep.js');
 
-module.exports = {
+module.exports = defineTest({
 	description: 'supports implicit dependencies when emitting files',
 	options: {
 		preserveEntrySignatures: 'allow-extension',
@@ -20,6 +20,8 @@ module.exports = {
 			},
 			buildEnd() {
 				assert.deepStrictEqual(JSON.parse(JSON.stringify(this.getModuleInfo(ID_MAIN))), {
+					id: ID_MAIN,
+					assertions: {},
 					ast: {
 						type: 'Program',
 						start: 0,
@@ -65,20 +67,39 @@ module.exports = {
 						sourceType: 'module'
 					},
 					code: "import { value } from './lib';\nconsole.log(value);\n",
+					dynamicallyImportedIdResolutions: [],
 					dynamicallyImportedIds: [],
 					dynamicImporters: [],
-					hasModuleSideEffects: true,
-					id: ID_MAIN,
+					exportedBindings: {
+						'.': []
+					},
+					exports: [],
+					hasDefaultExport: false,
+					moduleSideEffects: true,
 					implicitlyLoadedAfterOneOf: [],
 					implicitlyLoadedBefore: [ID_DEP],
+					importedIdResolutions: [
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						}
+					],
 					importedIds: [ID_LIB],
 					importers: [],
 					isEntry: true,
 					isExternal: false,
+					isIncluded: true,
 					meta: {},
 					syntheticNamedExports: false
 				});
 				assert.deepStrictEqual(JSON.parse(JSON.stringify(this.getModuleInfo(ID_DEP))), {
+					id: ID_DEP,
+					assertions: {},
 					ast: {
 						type: 'Program',
 						start: 0,
@@ -124,16 +145,33 @@ module.exports = {
 						sourceType: 'module'
 					},
 					code: "import { value } from './lib';\nconsole.log(value);\n",
+					dynamicallyImportedIdResolutions: [],
 					dynamicallyImportedIds: [],
 					dynamicImporters: [],
-					hasModuleSideEffects: true,
-					id: ID_DEP,
+					exportedBindings: {
+						'.': []
+					},
+					exports: [],
+					hasDefaultExport: false,
+					moduleSideEffects: true,
 					implicitlyLoadedAfterOneOf: [ID_MAIN],
 					implicitlyLoadedBefore: [],
+					importedIdResolutions: [
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						}
+					],
 					importedIds: [ID_LIB],
 					importers: [],
 					isEntry: false,
 					isExternal: false,
+					isIncluded: true,
 					meta: {},
 					syntheticNamedExports: false
 				});
@@ -156,4 +194,4 @@ module.exports = {
 			}
 		}
 	}
-};
+});

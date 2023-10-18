@@ -1,4 +1,4 @@
-System.register(['./answer.num.js', './lorem.str.js', './no-ext.js'], function (exports) {
+System.register(['./answer.num.js', './lorem.str.js', './no-ext.js'], (function (exports) {
 	'use strict';
 	return {
 		setters: [function (module) {
@@ -8,10 +8,10 @@ System.register(['./answer.num.js', './lorem.str.js', './no-ext.js'], function (
 		}, function (module) {
 			exports('noExt', module.default);
 		}],
-		execute: function () {
+		execute: (function () {
 
 
 
-		}
+		})
 	};
-});
+}));

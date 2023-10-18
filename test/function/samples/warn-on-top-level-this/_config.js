@@ -1,7 +1,7 @@
-const path = require('path');
-const assert = require('assert');
+const path = require('node:path');
+const { assertIncludes } = require('../../../utils.js');
 
-module.exports = {
+module.exports = defineTest({
 	description: 'warns on top-level this (#770)',
 	warnings: [
 		{
@@ -20,10 +20,11 @@ module.exports = {
 				3: this.foo = 'bar';
 				   ^
 			`,
-			url: `https://rollupjs.org/guide/en/#error-this-is-undefined`
+			url: `https://rollupjs.org/troubleshooting/#error-this-is-undefined`
 		}
 	],
-	runtimeError: err => {
-		assert.equal(err.message, `Cannot set property 'foo' of undefined`);
+	runtimeError: error => {
+		assertIncludes(error.message, 'Cannot set propert');
+		assertIncludes(error.message, "'foo'");
 	}
-};
+});

@@ -1,4 +1,4 @@
-System.register('foo', ['external'], function (exports) {
+System.register('foo', ['external'], (function (exports) {
 	'use strict';
 	var a, b;
 	return {
@@ -6,7 +6,7 @@ System.register('foo', ['external'], function (exports) {
 			a = module.default;
 			b = module.b;
 		}],
-		execute: function () {
+		execute: (function () {
 
 			/* this is an intro */
 
@@ -33,6 +33,6 @@ System.register('foo', ['external'], function (exports) {
 
 			// outro 4
 
-		}
+		})
 	};
-});
+}));

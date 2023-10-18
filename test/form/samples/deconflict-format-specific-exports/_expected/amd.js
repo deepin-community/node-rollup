@@ -1,4 +1,4 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
 	const exports$1 = {
 		x: 42
@@ -24,6 +24,4 @@ define(['exports'], function (exports) { 'use strict';
 	nestedConflict();
 	nestedNoConflict();
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

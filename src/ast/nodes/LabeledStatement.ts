@@ -1,20 +1,20 @@
-import MagicString from 'magic-string';
+import type MagicString from 'magic-string';
 import {
 	findFirstOccurrenceOutsideComment,
 	findNonWhiteSpace,
-	RenderOptions
+	type RenderOptions
 } from '../../utils/renderHelpers';
-import { HasEffectsContext, InclusionContext } from '../ExecutionContext';
-import Identifier from './Identifier';
-import * as NodeType from './NodeType';
-import { IncludeChildren, StatementBase, StatementNode } from './shared/Node';
+import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type Identifier from './Identifier';
+import type * as NodeType from './NodeType';
+import { type IncludeChildren, StatementBase, type StatementNode } from './shared/Node';
 
 export default class LabeledStatement extends StatementBase {
-	body!: StatementNode;
-	label!: Identifier;
-	type!: NodeType.tLabeledStatement;
+	declare body: StatementNode;
+	declare label: Identifier;
+	declare type: NodeType.tLabeledStatement;
 
-	hasEffects(context: HasEffectsContext) {
+	hasEffects(context: HasEffectsContext): boolean {
 		const brokenFlow = context.brokenFlow;
 		context.ignore.labels.add(this.label.name);
 		if (this.body.hasEffects(context)) return true;
@@ -26,7 +26,7 @@ export default class LabeledStatement extends StatementBase {
 		return false;
 	}
 
-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
 		this.included = true;
 		const brokenFlow = context.brokenFlow;
 		this.body.include(context, includeChildrenRecursively);
@@ -37,7 +37,7 @@ export default class LabeledStatement extends StatementBase {
 		}
 	}
 
-	render(code: MagicString, options: RenderOptions) {
+	render(code: MagicString, options: RenderOptions): void {
 		if (this.label.included) {
 			this.label.render(code, options);
 		} else {

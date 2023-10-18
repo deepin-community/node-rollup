@@ -1,10 +1,10 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
-  class C$1 {
+  let C$1 = class C {
     fn (num) {
       console.log(num - p);
     }
-  }
+  };
 
   var p$1 = 43;
 
@@ -23,4 +23,4 @@ define(['exports'], function (exports) { 'use strict';
   exports.p = p$1;
   exports.p$1 = p;
 
-});
+}));

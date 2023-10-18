@@ -1,6 +1,4 @@
-const path = require('path');
-
-module.exports = {
+module.exports = defineTest({
 	description: 'Throws when accessing the filename before it has been generated',
 	options: {
 		input: 'main.js',
@@ -16,9 +14,8 @@ module.exports = {
 		code: 'PLUGIN_ERROR',
 		hook: 'buildStart',
 		message:
-			'Plugin error - Unable to get file name for chunk "chunk.js". Ensure that generate is called first.',
+			'Plugin error - Unable to get file name for emitted chunk "chunk.js". You can only get file names once chunks have been generated after the "renderStart" hook.',
 		plugin: 'test-plugin',
-		pluginCode: 'CHUNK_NOT_GENERATED',
-		watchFiles: [path.join(__dirname, 'chunk.js')]
+		pluginCode: 'CHUNK_NOT_GENERATED'
 	}
-};
+});

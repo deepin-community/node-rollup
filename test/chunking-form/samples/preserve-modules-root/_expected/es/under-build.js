@@ -1,10 +1,1 @@
-import './custom_modules/@my-scope/my-base-pkg/index.js';
-import { __exports as myBasePkg } from './_virtual/index.js_commonjs-exports';
-
-const base = myBasePkg;
-
-var underBuild = {
-	base
-};
-
-export default underBuild;
+export { default } from './under-build2.js';

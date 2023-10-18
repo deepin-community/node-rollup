@@ -1,60 +1,58 @@
-import { bold, gray, yellow } from 'colorette';
-import { RollupWarning } from '../../src/rollup/types';
-import { getOrCreate } from '../../src/utils/getOrCreate';
+import { blue, cyan } from 'colorette';
+import type { RollupLog } from '../../src/rollup/types';
+import { bold, gray, yellow } from '../../src/utils/colors';
+import { ensureArray } from '../../src/utils/ensureArray';
+import { getLogFilter } from '../../src/utils/getLogFilter';
+import { getNewArray, getOrCreate } from '../../src/utils/getOrCreate';
+import { LOGLEVEL_DEBUG, LOGLEVEL_WARN } from '../../src/utils/logging';
+import { printQuotedStringList } from '../../src/utils/printStringList';
 import relativeId from '../../src/utils/relativeId';
+import { getRollupUrl } from '../../src/utils/url';
+import {
+	URL_AVOIDING_EVAL,
+	URL_NAME_IS_NOT_EXPORTED,
+	URL_OUTPUT_EXPORTS,
+	URL_OUTPUT_GLOBALS,
+	URL_SOURCEMAP_IS_LIKELY_TO_BE_INCORRECT,
+	URL_THIS_IS_UNDEFINED,
+	URL_TREATING_MODULE_AS_EXTERNAL_DEPENDENCY
+} from '../../src/utils/urls';
 import { stderr } from '../logging';
+import type { BatchWarnings } from './loadConfigFileType';
 
-export interface BatchWarnings {
-	add: (warning: RollupWarning) => void;
-	readonly count: number;
-	flush: () => void;
-	readonly warningOccurred: boolean;
-}
-
-export default function batchWarnings() {
+export default function batchWarnings(command: Record<string, any>): BatchWarnings {
+	const silent = !!command.silent;
+	const logFilter = generateLogFilter(command);
 	let count = 0;
-	let deferredWarnings = new Map<keyof typeof deferredHandlers, RollupWarning[]>();
+	const deferredWarnings = new Map<keyof typeof deferredHandlers, RollupLog[]>();
 	let warningOccurred = false;
 
+	const add = (warning: RollupLog) => {
+		count += 1;
+		warningOccurred = true;
+
+		if (silent) return;
+		if (warning.code! in deferredHandlers) {
+			getOrCreate(deferredWarnings, warning.code!, getNewArray).push(warning);
+		} else if (warning.code! in immediateHandlers) {
+			immediateHandlers[warning.code!](warning);
+		} else {
+			title(warning.message);
+			defaultBody(warning);
+		}
+	};
+
 	return {
+		add,
+
 		get count() {
 			return count;
 		},
 
-		get warningOccurred() {
-			return warningOccurred;
-		},
+		flush() {
+			if (count === 0 || silent) return;
 
-		add: (warning: RollupWarning) => {
-			count += 1;
-			warningOccurred = true;
-
-			if (warning.code! in deferredHandlers) {
-				getOrCreate(deferredWarnings, warning.code!, () => []).push(warning);
-			} else if (warning.code! in immediateHandlers) {
-				immediateHandlers[warning.code!](warning);
-			} else {
-				title(warning.message);
-
-				if (warning.url) info(warning.url);
-
-				const id = (warning.loc && warning.loc.file) || warning.id;
-				if (id) {
-					const loc = warning.loc
-						? `${relativeId(id)} (${warning.loc.line}:${warning.loc.column})`
-						: relativeId(id);
-
-					stderr(bold(relativeId(loc)));
-				}
-
-				if (warning.frame) info(warning.frame);
-			}
-		},
-
-		flush: () => {
-			if (count === 0) return;
-
-			const codes = Array.from(deferredWarnings.keys()).sort(
+			const codes = [...deferredWarnings.keys()].sort(
 				(a, b) => deferredWarnings.get(b)!.length - deferredWarnings.get(a)!.length
 			);
 
@@ -62,44 +60,65 @@ export default function batchWarnings() {
 				deferredHandlers[code](deferredWarnings.get(code)!);
 			}
 
-			deferredWarnings = new Map();
+			deferredWarnings.clear();
 			count = 0;
+		},
+
+		log(level, log) {
+			if (!logFilter(log)) return;
+			switch (level) {
+				case LOGLEVEL_WARN: {
+					return add(log);
+				}
+				case LOGLEVEL_DEBUG: {
+					if (!silent) {
+						stderr(bold(blue(log.message)));
+						defaultBody(log);
+					}
+					return;
+				}
+				default: {
+					if (!silent) {
+						stderr(bold(cyan(log.message)));
+						defaultBody(log);
+					}
+				}
+			}
+		},
+
+		get warningOccurred() {
+			return warningOccurred;
 		}
 	};
 }
 
 const immediateHandlers: {
-	[code: string]: (warning: RollupWarning) => void;
+	[code: string]: (warning: RollupLog) => void;
 } = {
-	UNKNOWN_OPTION: warning => {
-		title(`You have passed an unrecognized option`);
-		stderr(warning.message);
-	},
-
-	MISSING_NODE_BUILTINS: warning => {
+	MISSING_NODE_BUILTINS(warning) {
 		title(`Missing shims for Node.js built-ins`);
 
-		const detail =
-			warning.modules!.length === 1
-				? `'${warning.modules![0]}'`
-				: `${warning
-						.modules!.slice(0, -1)
-						.map((name: string) => `'${name}'`)
-						.join(', ')} and '${warning.modules!.slice(-1)}'`;
 		stderr(
-			`Creating a browser bundle that depends on ${detail}. You might need to include https://github.com/ionic-team/rollup-plugin-node-polyfills`
+			`Creating a browser bundle that depends on ${printQuotedStringList(
+				warning.ids!
+			)}. You might need to include https://github.com/FredKSchott/rollup-plugin-polyfill-node`
 		);
+	},
+
+	UNKNOWN_OPTION(warning) {
+		title(`You have passed an unrecognized option`);
+		stderr(warning.message);
 	}
 };
 
 const deferredHandlers: {
-	[code: string]: (warnings: RollupWarning[]) => void;
+	[code: string]: (warnings: RollupLog[]) => void;
 } = {
 	CIRCULAR_DEPENDENCY(warnings) {
 		title(`Circular dependenc${warnings.length > 1 ? 'ies' : 'y'}`);
 		const displayed = warnings.length > 5 ? warnings.slice(0, 3) : warnings;
 		for (const warning of displayed) {
-			stderr(warning.cycle!.join(' -> '));
+			stderr(warning.ids!.map(relativeId).join(' -> '));
 		}
 		if (warnings.length > displayed.length) {
 			stderr(`...and ${warnings.length - displayed.length} more`);
@@ -112,40 +131,42 @@ const deferredHandlers: {
 				warnings.length > 1 ? 'chunks' : 'chunk'
 			}`
 		);
-		stderr(warnings.map(warning => warning.chunkName!).join(', '));
+		stderr(printQuotedStringList(warnings.map(warning => warning.names![0])));
 	},
 
 	EVAL(warnings) {
 		title('Use of eval is strongly discouraged');
-		info('https://rollupjs.org/guide/en/#avoiding-eval');
+		info(getRollupUrl(URL_AVOIDING_EVAL));
 		showTruncatedWarnings(warnings);
 	},
 
 	MISSING_EXPORT(warnings) {
 		title('Missing exports');
-		info('https://rollupjs.org/guide/en/#error-name-is-not-exported-by-module');
+		info(getRollupUrl(URL_NAME_IS_NOT_EXPORTED));
 
 		for (const warning of warnings) {
-			stderr(bold(warning.importer!));
-			stderr(`${warning.missing} is not exported by ${warning.exporter}`);
+			stderr(bold(relativeId(warning.id!)));
+			stderr(`${warning.binding} is not exported by ${relativeId(warning.exporter!)}`);
 			stderr(gray(warning.frame!));
 		}
 	},
 
 	MISSING_GLOBAL_NAME(warnings) {
 		title(`Missing global variable ${warnings.length > 1 ? 'names' : 'name'}`);
+		info(getRollupUrl(URL_OUTPUT_GLOBALS));
 		stderr(
-			`Use output.globals to specify browser global variable names corresponding to external modules`
+			`Use "output.globals" to specify browser global variable names corresponding to external modules:`
 		);
 		for (const warning of warnings) {
-			stderr(`${bold(warning.source!)} (guessing '${warning.guess}')`);
+			stderr(`${bold(warning.id!)} (guessing "${warning.names![0]}")`);
 		}
 	},
 
-	MIXED_EXPORTS: warnings => {
+	MIXED_EXPORTS(warnings) {
 		title('Mixing named and default exports');
-		info(`https://rollupjs.org/guide/en/#outputexports`);
+		info(getRollupUrl(URL_OUTPUT_EXPORTS));
 		stderr(bold('The following entry modules are using named and default exports together:'));
+		warnings.sort((a, b) => (a.id! < b.id! ? -1 : 1));
 		const displayedWarnings = warnings.length > 5 ? warnings.slice(0, 3) : warnings;
 		for (const warning of displayedWarnings) {
 			stderr(relativeId(warning.id!));
@@ -154,7 +175,7 @@ const deferredHandlers: {
 			stderr(`...and ${warnings.length - displayedWarnings.length} other entry modules`);
 		}
 		stderr(
-			`\nConsumers of your bundle will have to use chunk['default'] to access their default export, which may not be what you want. Use \`output.exports: 'named'\` to disable this warning`
+			`\nConsumers of your bundle will have to use chunk.default to access their default export, which may not be what you want. Use \`output.exports: "named"\` to disable this warning.`
 		);
 	},
 
@@ -162,18 +183,13 @@ const deferredHandlers: {
 		title(`Conflicting re-exports`);
 		for (const warning of warnings) {
 			stderr(
-				`${bold(relativeId(warning.reexporter!))} re-exports '${
-					warning.name
-				}' from both ${relativeId(warning.sources![0])} and ${relativeId(
-					warning.sources![1]
-				)} (will be ignored)`
+				`"${bold(relativeId(warning.reexporter!))}" re-exports "${
+					warning.binding
+				}" from both "${relativeId(warning.ids![0])}" and "${relativeId(
+					warning.ids![1]
+				)}" (will be ignored).`
 			);
 		}
-	},
-
-	NON_EXISTENT_EXPORT(warnings) {
-		title(`Import of non-existent ${warnings.length > 1 ? 'exports' : 'export'}`);
-		showTruncatedWarnings(warnings);
 	},
 
 	PLUGIN_WARNING(warnings) {
@@ -205,63 +221,87 @@ const deferredHandlers: {
 
 	SOURCEMAP_BROKEN(warnings) {
 		title(`Broken sourcemap`);
-		info('https://rollupjs.org/guide/en/#warning-sourcemap-is-likely-to-be-incorrect');
+		info(getRollupUrl(URL_SOURCEMAP_IS_LIKELY_TO_BE_INCORRECT));
 
-		const plugins = Array.from(new Set(warnings.map(w => w.plugin).filter(Boolean)));
-		const detail =
-			plugins.length > 1
-				? ` (such as ${plugins
-						.slice(0, -1)
-						.map(p => `'${p}'`)
-						.join(', ')} and '${plugins.slice(-1)}')`
-				: ` (such as '${plugins[0]}')`;
-
-		stderr(`Plugins that transform code${detail} should generate accompanying sourcemaps`);
+		const plugins = [...new Set(warnings.map(({ plugin }) => plugin).filter(Boolean))] as string[];
+		stderr(
+			`Plugins that transform code (such as ${printQuotedStringList(
+				plugins
+			)}) should generate accompanying sourcemaps.`
+		);
 	},
 
 	THIS_IS_UNDEFINED(warnings) {
-		title('`this` has been rewritten to `undefined`');
-		info('https://rollupjs.org/guide/en/#error-this-is-undefined');
+		title('"this" has been rewritten to "undefined"');
+		info(getRollupUrl(URL_THIS_IS_UNDEFINED));
 		showTruncatedWarnings(warnings);
 	},
 
 	UNRESOLVED_IMPORT(warnings) {
 		title('Unresolved dependencies');
-		info('https://rollupjs.org/guide/en/#warning-treating-module-as-external-dependency');
+		info(getRollupUrl(URL_TREATING_MODULE_AS_EXTERNAL_DEPENDENCY));
 
-		const dependencies = new Map();
+		const dependencies = new Map<string, string[]>();
 		for (const warning of warnings) {
-			getOrCreate(dependencies, warning.source, () => []).push(warning.importer);
+			getOrCreate(dependencies, relativeId(warning.exporter!), getNewArray).push(
+				relativeId(warning.id!)
+			);
 		}
 
-		for (const dependency of dependencies.keys()) {
-			const importers = dependencies.get(dependency);
-			stderr(`${bold(dependency)} (imported by ${importers.join(', ')})`);
+		for (const [dependency, importers] of dependencies) {
+			stderr(`${bold(dependency)} (imported by ${printQuotedStringList(importers)})`);
 		}
 	},
 
 	UNUSED_EXTERNAL_IMPORT(warnings) {
 		title('Unused external imports');
 		for (const warning of warnings) {
-			stderr(`${warning.names} imported from external module '${warning.source}' but never used`);
+			stderr(
+				warning.names +
+					' imported from external module "' +
+					warning.exporter +
+					'" but never used in ' +
+					printQuotedStringList(warning.ids!.map(relativeId)) +
+					'.'
+			);
 		}
 	}
 };
 
-function title(str: string) {
-	stderr(bold(yellow(`(!) ${str}`)));
+function defaultBody(log: RollupLog): void {
+	if (log.url) {
+		info(getRollupUrl(log.url));
+	}
+
+	const id = log.loc?.file || log.id;
+	if (id) {
+		const loc = log.loc ? `${relativeId(id)} (${log.loc.line}:${log.loc.column})` : relativeId(id);
+
+		stderr(bold(relativeId(loc)));
+	}
+
+	if (log.frame) info(log.frame);
 }
 
-function info(url: string) {
+function title(string_: string): void {
+	stderr(bold(yellow(`(!) ${string_}`)));
+}
+
+function info(url: string): void {
 	stderr(gray(url));
 }
 
-function nest<T>(array: T[], prop: string) {
-	const nested: { items: T[]; key: string }[] = [];
-	const lookup = new Map<string, { items: T[]; key: string }>();
+interface Nested<T> {
+	items: T[];
+	key: string;
+}
+
+function nest<T extends Record<string, any>>(array: readonly T[], property: string): Nested<T>[] {
+	const nested: Nested<T>[] = [];
+	const lookup = new Map<string, Nested<T>>();
 
 	for (const item of array) {
-		const key = (item as any)[prop];
+		const key = item[property];
 		getOrCreate(lookup, key, () => {
 			const items = {
 				items: [],
@@ -275,7 +315,7 @@ function nest<T>(array: T[], prop: string) {
 	return nested;
 }
 
-function showTruncatedWarnings(warnings: RollupWarning[]) {
+function showTruncatedWarnings(warnings: readonly RollupLog[]): void {
 	const nestedByModule = nest(warnings, 'id');
 
 	const displayedByModule = nestedByModule.length > 5 ? nestedByModule.slice(0, 3) : nestedByModule;
@@ -291,4 +331,12 @@ function showTruncatedWarnings(warnings: RollupWarning[]) {
 	if (nestedByModule.length > displayedByModule.length) {
 		stderr(`\n...and ${nestedByModule.length - displayedByModule.length} other files`);
 	}
+}
+
+function generateLogFilter(command: Record<string, any>) {
+	const filters = ensureArray(command.filterLogs).flatMap(filter => String(filter).split(','));
+	if (process.env.ROLLUP_FILTER_LOGS) {
+		filters.push(...process.env.ROLLUP_FILTER_LOGS.split(','));
+	}
+	return getLogFilter(filters);
 }

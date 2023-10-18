@@ -1,3 +1,4 @@
+import process from 'node:process';
 import help from 'help.md';
 import { version } from 'package.json';
 import argParser from 'yargs-parser';
@@ -15,8 +16,9 @@ if (command.help || (process.argv.length <= 2 && process.stdin.isTTY)) {
 	console.log(`rollup v${version}`);
 } else {
 	try {
+		// eslint-disable-next-line unicorn/prefer-module
 		require('source-map-support').install();
-	} catch (err) {
+	} catch {
 		// do nothing
 	}
 

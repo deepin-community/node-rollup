@@ -15,7 +15,8 @@ Comment: part from es6-shim Copyright 2013-2016 by Paul Miller
 
 Files: debian/*
 Copyright: 2016 Sruthi Chandran <srud@disroot.org>
- 2020-2021 Yadd <yadd@debian.org>
+ 2020-2022 Yadd <yadd@debian.org>
+ 2023 Sandra Uwah <sandrauwah282@gmail.com>
 License: Expat
 
 Files: debian/build_modules/package-name-regex/*

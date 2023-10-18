@@ -1,12 +1,13 @@
-const path = require('path');
+const path = require('node:path');
+const ID_MAIN = path.join(__dirname, 'main.js');
 
-module.exports = {
+module.exports = defineTest({
 	description: 'external paths from custom resolver remain external (#633)',
 	options: {
 		external: (_id, parent) => parent === 'dep',
 		plugins: [
 			{
-				resolveId(id, parent) {
+				resolveId(id) {
 					if (id === 'dep') return id;
 				},
 				load(id) {
@@ -17,8 +18,8 @@ module.exports = {
 	},
 	error: {
 		code: 'INVALID_EXTERNAL_ID',
+		watchFiles: [ID_MAIN, 'dep'],
 		message:
-			"'dep' is imported as an external by dep, but is already an existing non-external module id.",
-		watchFiles: [path.join(__dirname, 'main.js'), 'dep']
+			'"dep" is imported as an external by "dep", but is already an existing non-external module id.'
 	}
-};
+});

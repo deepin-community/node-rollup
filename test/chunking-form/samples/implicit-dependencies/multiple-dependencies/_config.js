@@ -1,5 +1,5 @@
-const path = require('path');
-const assert = require('assert');
+const assert = require('node:assert');
+const path = require('node:path');
 
 const ID_MAIN1 = path.join(__dirname, 'main1.js');
 const ID_MAIN2 = path.join(__dirname, 'main2.js');
@@ -9,7 +9,7 @@ const ID_LIB2 = path.join(__dirname, 'lib2.js');
 const ID_LIB3 = path.join(__dirname, 'lib3.js');
 const ID_DEP = path.join(__dirname, 'dep.js');
 
-module.exports = {
+module.exports = defineTest({
 	description: 'supports emitting the same chunk with different and multiple dependencies',
 	options: {
 		input: ['main1', 'main2'],
@@ -34,6 +34,8 @@ module.exports = {
 			},
 			buildEnd() {
 				assert.deepStrictEqual(JSON.parse(JSON.stringify(this.getModuleInfo(ID_MAIN1))), {
+					id: ID_MAIN1,
+					assertions: {},
 					ast: {
 						type: 'Program',
 						start: 0,
@@ -113,22 +115,58 @@ module.exports = {
 						],
 						sourceType: 'module'
 					},
-					code:
-						"import { lib1 } from './lib1';\nimport { lib1b } from './lib1b';\nimport { lib2 } from './lib2';\nconsole.log('main1', lib1,  lib1b, lib2);\n",
+					code: "import { lib1 } from './lib1';\nimport { lib1b } from './lib1b';\nimport { lib2 } from './lib2';\nconsole.log('main1', lib1,  lib1b, lib2);\n",
+					dynamicallyImportedIdResolutions: [],
 					dynamicallyImportedIds: [],
 					dynamicImporters: [],
-					hasModuleSideEffects: true,
-					id: ID_MAIN1,
+					exportedBindings: {
+						'.': []
+					},
+					exports: [],
+					hasDefaultExport: false,
+					moduleSideEffects: true,
 					implicitlyLoadedAfterOneOf: [],
 					implicitlyLoadedBefore: [ID_DEP],
+					importedIdResolutions: [
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB1,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						},
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB1B,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						},
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB2,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						}
+					],
 					importedIds: [ID_LIB1, ID_LIB1B, ID_LIB2],
 					importers: [],
 					isEntry: true,
 					isExternal: false,
+					isIncluded: true,
 					meta: {},
 					syntheticNamedExports: false
 				});
 				assert.deepStrictEqual(JSON.parse(JSON.stringify(this.getModuleInfo(ID_MAIN2))), {
+					id: ID_MAIN2,
+					assertions: {},
 					ast: {
 						type: 'Program',
 						start: 0,
@@ -208,22 +246,58 @@ module.exports = {
 						],
 						sourceType: 'module'
 					},
-					code:
-						"import { lib1 } from './lib1';\nimport { lib1b } from './lib1b';\nimport { lib3 } from './lib3';\nconsole.log('main2', lib1, lib1b, lib3);\n",
+					code: "import { lib1 } from './lib1';\nimport { lib1b } from './lib1b';\nimport { lib3 } from './lib3';\nconsole.log('main2', lib1, lib1b, lib3);\n",
+					dynamicallyImportedIdResolutions: [],
 					dynamicallyImportedIds: [],
 					dynamicImporters: [],
-					hasModuleSideEffects: true,
-					id: ID_MAIN2,
+					exportedBindings: {
+						'.': []
+					},
+					exports: [],
+					hasDefaultExport: false,
+					moduleSideEffects: true,
 					implicitlyLoadedAfterOneOf: [],
 					implicitlyLoadedBefore: [ID_DEP],
+					importedIdResolutions: [
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB1,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						},
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB1B,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						},
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB3,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						}
+					],
 					importedIds: [ID_LIB1, ID_LIB1B, ID_LIB3],
 					importers: [],
 					isEntry: true,
 					isExternal: false,
+					isIncluded: true,
 					meta: {},
 					syntheticNamedExports: false
 				});
 				assert.deepStrictEqual(JSON.parse(JSON.stringify(this.getModuleInfo(ID_DEP))), {
+					id: ID_DEP,
+					assertions: {},
 					ast: {
 						type: 'Program',
 						start: 0,
@@ -302,22 +376,56 @@ module.exports = {
 						],
 						sourceType: 'module'
 					},
-					code:
-						"import { lib1 } from './lib1';\nimport { lib2 } from './lib2';\nimport { lib3 } from './lib3';\nconsole.log(lib1, lib2, lib3);\n",
+					code: "import { lib1 } from './lib1';\nimport { lib2 } from './lib2';\nimport { lib3 } from './lib3';\nconsole.log(lib1, lib2, lib3);\n",
+					dynamicallyImportedIdResolutions: [],
 					dynamicallyImportedIds: [],
 					dynamicImporters: [],
-					hasModuleSideEffects: true,
-					id: ID_DEP,
+					exportedBindings: {
+						'.': []
+					},
+					exports: [],
+					hasDefaultExport: false,
+					moduleSideEffects: true,
 					implicitlyLoadedAfterOneOf: [ID_MAIN1, ID_MAIN2],
 					implicitlyLoadedBefore: [],
+					importedIdResolutions: [
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB1,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						},
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB2,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						},
+						{
+							assertions: {},
+							external: false,
+							id: ID_LIB3,
+							meta: {},
+							moduleSideEffects: true,
+							resolvedBy: 'rollup',
+							syntheticNamedExports: false
+						}
+					],
 					importedIds: [ID_LIB1, ID_LIB2, ID_LIB3],
 					importers: [],
 					isEntry: false,
 					isExternal: false,
+					isIncluded: true,
 					meta: {},
 					syntheticNamedExports: false
 				});
 			}
 		}
 	}
-};
+});

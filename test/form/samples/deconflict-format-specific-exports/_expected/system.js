@@ -1,7 +1,7 @@
-System.register('bundle', [], function (exports) {
+System.register('bundle', [], (function (exports) {
 	'use strict';
 	return {
-		execute: function () {
+		execute: (function () {
 
 			const exports$1 = {
 				x: 42
@@ -13,7 +13,7 @@ System.register('bundle', [], function (exports) {
 					x: 42
 				};
 				console.log(exports$1);
-				(exports('x', x + 1), x++);
+				exports('x', x + 1), x++;
 			}
 
 			function nestedNoConflict() {
@@ -27,6 +27,6 @@ System.register('bundle', [], function (exports) {
 			nestedConflict();
 			nestedNoConflict();
 
-		}
+		})
 	};
-});
+}));

@@ -1,4 +1,4 @@
-define(['exports'], function (exports) { 'use strict';
+define(['exports'], (function (exports) { 'use strict';
 
 	console.log('dynamic2');
 
@@ -15,11 +15,11 @@ define(['exports'], function (exports) { 'use strict';
 
 	var dynamic1 = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		DYNAMIC_B: DYNAMIC_A,
-		DYNAMIC_A: DYNAMIC_B
+		DYNAMIC_A: DYNAMIC_B,
+		DYNAMIC_B: DYNAMIC_A
 	});
 
 	exports.dynamic1 = dynamic1;
 	exports.dynamic2 = dynamic2;
 
-});
+}));

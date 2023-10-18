@@ -1,5 +1,5 @@
+var assert = require('node:assert');
 var replace = require('@rollup/plugin-replace');
-var assert = require('assert');
 
 let warnings = 0;
 
@@ -11,7 +11,7 @@ module.exports = commands => ({
 				assert.strictEqual(warnings, 1);
 			}
 		},
-		replace({ ANSWER: commands.configAnswer })
+		replace({ preventAssignment: true, ANSWER: commands.configAnswer })
 	],
 	onwarn(warning) {
 		warnings++;

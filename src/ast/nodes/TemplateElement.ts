@@ -1,28 +1,29 @@
-import * as NodeType from './NodeType';
-import { GenericEsTreeNode, NodeBase } from './shared/Node';
+import type * as NodeType from './NodeType';
+import { type GenericEsTreeNode, NodeBase } from './shared/Node';
 
 export default class TemplateElement extends NodeBase {
-	tail!: boolean;
-	type!: NodeType.tTemplateElement;
-	value!: {
+	declare tail: boolean;
+	declare type: NodeType.tTemplateElement;
+	declare value: {
 		cooked: string | null;
 		raw: string;
 	};
 
-	bind() {}
+	// Do not try to bind value
+	bind(): void {}
 
-	hasEffects() {
+	hasEffects(): boolean {
 		return false;
 	}
 
-	include() {
+	include(): void {
 		this.included = true;
 	}
 
-	parseNode(esTreeNode: GenericEsTreeNode) {
+	parseNode(esTreeNode: GenericEsTreeNode): void {
 		this.value = esTreeNode.value;
 		super.parseNode(esTreeNode);
 	}
 
-	render() {}
+	render(): void {}
 }

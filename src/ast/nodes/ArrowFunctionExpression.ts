@@ -1,113 +1,78 @@
-import { CallOptions } from '../CallOptions';
-import { BROKEN_FLOW_NONE, HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type { NodeInteraction } from '../NodeInteractions';
+import { INTERACTION_CALLED } from '../NodeInteractions';
 import ReturnValueScope from '../scopes/ReturnValueScope';
-import Scope from '../scopes/Scope';
-import { ObjectPath, UnknownKey, UNKNOWN_PATH } from '../utils/PathTracker';
-import { UNKNOWN_EXPRESSION } from '../values';
-import BlockStatement from './BlockStatement';
+import type Scope from '../scopes/Scope';
+import { type ObjectPath } from '../utils/PathTracker';
+import type BlockStatement from './BlockStatement';
 import Identifier from './Identifier';
-import * as NodeType from './NodeType';
-import RestElement from './RestElement';
-import { ExpressionNode, GenericEsTreeNode, IncludeChildren, NodeBase } from './shared/Node';
-import { PatternNode } from './shared/Pattern';
-import SpreadElement from './SpreadElement';
+import type * as NodeType from './NodeType';
+import FunctionBase from './shared/FunctionBase';
+import type { ExpressionNode, IncludeChildren } from './shared/Node';
+import { ObjectEntity } from './shared/ObjectEntity';
+import { OBJECT_PROTOTYPE } from './shared/ObjectPrototype';
+import type { PatternNode } from './shared/Pattern';
 
-export default class ArrowFunctionExpression extends NodeBase {
-	body!: BlockStatement | ExpressionNode;
-	params!: PatternNode[];
-	preventChildBlockScope!: true;
-	scope!: ReturnValueScope;
-	type!: NodeType.tArrowFunctionExpression;
+export default class ArrowFunctionExpression extends FunctionBase {
+	declare async: boolean;
+	declare body: BlockStatement | ExpressionNode;
+	declare params: readonly PatternNode[];
+	declare preventChildBlockScope: true;
+	declare scope: ReturnValueScope;
+	declare type: NodeType.tArrowFunctionExpression;
+	protected objectEntity: ObjectEntity | null = null;
 
-	createScope(parentScope: Scope) {
+	createScope(parentScope: Scope): void {
 		this.scope = new ReturnValueScope(parentScope, this.context);
 	}
 
-	deoptimizePath(path: ObjectPath) {
-		// A reassignment of UNKNOWN_PATH is considered equivalent to having lost track
-		// which means the return expression needs to be reassigned
-		if (path.length === 1 && path[0] === UnknownKey) {
-			this.scope.getReturnExpression().deoptimizePath(UNKNOWN_PATH);
-		}
-	}
-
-	getReturnExpressionWhenCalledAtPath(path: ObjectPath) {
-		return path.length === 0 ? this.scope.getReturnExpression() : UNKNOWN_EXPRESSION;
-	}
-
-	hasEffects() {
+	hasEffects(): boolean {
+		if (!this.deoptimized) this.applyDeoptimizations();
 		return false;
 	}
 
-	hasEffectsWhenAccessedAtPath(path: ObjectPath) {
-		return path.length > 1;
-	}
-
-	hasEffectsWhenAssignedAtPath(path: ObjectPath) {
-		return path.length > 1;
-	}
-
-	hasEffectsWhenCalledAtPath(
+	hasEffectsOnInteractionAtPath(
 		path: ObjectPath,
-		_callOptions: CallOptions,
+		interaction: NodeInteraction,
 		context: HasEffectsContext
 	): boolean {
-		if (path.length > 0) return true;
-		for (const param of this.params) {
-			if (param.hasEffects(context)) return true;
+		if (super.hasEffectsOnInteractionAtPath(path, interaction, context)) {
+			return true;
 		}
-		const { ignore, brokenFlow } = context;
-		context.ignore = {
-			breaks: false,
-			continues: false,
-			labels: new Set(),
-			returnAwaitYield: true
-		};
-		if (this.body.hasEffects(context)) return true;
-		context.ignore = ignore;
-		context.brokenFlow = brokenFlow;
+
+		if (this.annotationNoSideEffects) {
+			return false;
+		}
+
+		if (interaction.type === INTERACTION_CALLED) {
+			const { ignore, brokenFlow } = context;
+			context.ignore = {
+				breaks: false,
+				continues: false,
+				labels: new Set(),
+				returnYield: true,
+				this: false
+			};
+			if (this.body.hasEffects(context)) return true;
+			context.ignore = ignore;
+			context.brokenFlow = brokenFlow;
+		}
 		return false;
 	}
 
-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
-		this.included = true;
-		for (const param of this.params) {
-			if (!(param instanceof Identifier)) {
-				param.include(context, includeChildrenRecursively);
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+		super.include(context, includeChildrenRecursively);
+		for (const parameter of this.params) {
+			if (!(parameter instanceof Identifier)) {
+				parameter.include(context, includeChildrenRecursively);
 			}
 		}
-		const { brokenFlow } = context;
-		context.brokenFlow = BROKEN_FLOW_NONE;
-		this.body.include(context, includeChildrenRecursively);
-		context.brokenFlow = brokenFlow;
 	}
 
-	includeCallArguments(context: InclusionContext, args: (ExpressionNode | SpreadElement)[]): void {
-		this.scope.includeCallArguments(context, args);
-	}
-
-	initialise() {
-		this.scope.addParameterVariables(
-			this.params.map(param => param.declare('parameter', UNKNOWN_EXPRESSION)),
-			this.params[this.params.length - 1] instanceof RestElement
-		);
-		if (this.body instanceof BlockStatement) {
-			this.body.addImplicitReturnExpressionToScope();
-		} else {
-			this.scope.addReturnExpression(this.body);
+	protected getObjectEntity(): ObjectEntity {
+		if (this.objectEntity !== null) {
+			return this.objectEntity;
 		}
-	}
-
-	parseNode(esTreeNode: GenericEsTreeNode) {
-		if (esTreeNode.body.type === NodeType.BlockStatement) {
-			this.body = new this.context.nodeConstructors.BlockStatement(
-				esTreeNode.body,
-				this,
-				this.scope.hoistedBodyVarScope
-			);
-		}
-		super.parseNode(esTreeNode);
+		return (this.objectEntity = new ObjectEntity([], OBJECT_PROTOTYPE));
 	}
 }
-
-ArrowFunctionExpression.prototype.preventChildBlockScope = true;

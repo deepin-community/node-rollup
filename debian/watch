@@ -1,6 +1,6 @@
 version=4
 opts=\
-dversionmangle=s/\+(debian|dfsg|ds|deb)(\.\d+)?$//,\
-oversionmangle=s/^(0.68.2)$/$1+ds/,\
-filenamemangle=s/.*\/v?([\d\.-]+)\.tar\.gz/node-rollup-$1.tar.gz/ \
- https://github.com/rollup/rollup/tags .*/archive/.*/v?([\d\.]+).tar.gz debian
+dversionmangle=auto,\
+uversionmangle=s/-/~beta~/g,\
+filenamemangle=s/.*?(@ANY_VERSION@@ARCHIVE_EXT@)/node-rollup-$1/ \
+ https://github.com/rollup/rollup/tags .*/archive/.*/v?(\d[\d\.]*)@ARCHIVE_EXT@

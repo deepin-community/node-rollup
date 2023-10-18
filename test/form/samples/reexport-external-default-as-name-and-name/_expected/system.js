@@ -1,4 +1,4 @@
-System.register('bundle', ['external'], function (exports) {
+System.register('bundle', ['external'], (function (exports) {
 	'use strict';
 	var value;
 	return {
@@ -6,10 +6,10 @@ System.register('bundle', ['external'], function (exports) {
 			value = module.value;
 			exports('reexported', module.default);
 		}],
-		execute: function () {
+		execute: (function () {
 
 			console.log(value);
 
-		}
+		})
 	};
-});
+}));

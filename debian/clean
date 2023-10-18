@@ -1,3 +1,4 @@
+build-plugins/*.js
 .commithash
 cli/*.js
 cli/run/*.js
@@ -9,6 +10,7 @@ bin/src/*.js
 bin/src/**/*.js
 browser/*.js
 node_modules/
+rollup.config.js
 rollup.1
 foo.js
 main.js

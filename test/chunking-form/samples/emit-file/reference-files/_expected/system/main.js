@@ -1,11 +1,11 @@
-System.register([], function (exports, module) {
+System.register([], (function (exports, module) {
 	'use strict';
 	return {
-		execute: function () {
+		execute: (function () {
 
 			exports('s', showImage);
 
-			var logo = new URL('assets/logo1-a5ec488b.svg', module.meta.url).href;
+			var logo = new URL('assets/logo1-60bc15c4.svg', module.meta.url).href;
 
 			function showImage(url) {
 				console.log(url);
@@ -19,6 +19,6 @@ System.register([], function (exports, module) {
 			showImage(logo);
 			module.import('./nested/chunk.js');
 
-		}
+		})
 	};
-});
+}));

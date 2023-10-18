@@ -1,7 +1,8 @@
-const assert = require('assert');
+const assert = require('node:assert');
 
-module.exports = {
-	description: 'allows overriding imports of external namespace reexports without external live-bindings',
+module.exports = defineTest({
+	description:
+		'allows overriding imports of external namespace reexports without external live-bindings',
 	options: {
 		external: 'path',
 		output: {
@@ -16,4 +17,4 @@ module.exports = {
 		exports.reassign();
 		assert.strictEqual(exports.resolve, 'defined');
 	}
-};
+});

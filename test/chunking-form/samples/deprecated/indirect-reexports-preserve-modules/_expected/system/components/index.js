@@ -1,4 +1,4 @@
-System.register('bundle', ['./sub/index.js'], function (exports) {
+System.register('bundle', ['./sub/index.js'], (function (exports) {
 	'use strict';
 	var bar;
 	return {
@@ -6,10 +6,10 @@ System.register('bundle', ['./sub/index.js'], function (exports) {
 			bar = module.default;
 			exports('foo', module.foo);
 		}],
-		execute: function () {
+		execute: (function () {
 
 			const baz = exports('baz', { bar });
 
-		}
+		})
 	};
-});
+}));

@@ -1,27 +1,28 @@
-import { DecodedSourceMap, SourceMap } from 'magic-string';
-import Module from '../Module';
-import {
+import { type DecodedSourceMap, SourceMap } from 'magic-string';
+import type Module from '../Module';
+import type {
 	DecodedSourceMapOrMissing,
 	ExistingDecodedSourceMap,
-	SourceMapSegment,
-	WarningHandler
+	LogHandler,
+	SourceMapSegment
 } from '../rollup/types';
-import { error } from './error';
+import { decodedSourcemap, resetSourcemapCache } from './decodedSourcemap';
+import { LOGLEVEL_WARN } from './logging';
+import { error, logConflictingSourcemapSources, logSourcemapBroken } from './logs';
 import { basename, dirname, relative, resolve } from './path';
 
 class Source {
-	content: string;
-	filename: string;
-	isOriginal: boolean;
+	readonly content: string | null;
+	readonly filename: string;
+	isOriginal = true;
 
-	constructor(filename: string, content: string) {
-		this.isOriginal = true;
+	constructor(filename: string, content: string | null) {
 		this.filename = filename;
 		this.content = content;
 	}
 
 	traceSegment(line: number, column: number, name: string): SourceMapSegmentObject {
-		return { line, column, name, source: this };
+		return { column, line, name, source: this };
 	}
 }
 
@@ -33,12 +34,12 @@ interface SourceMapSegmentObject {
 }
 
 class Link {
-	mappings: SourceMapSegment[][];
-	names: string[];
-	sources: (Source | Link)[];
+	readonly mappings: readonly SourceMapSegment[][];
+	readonly names: readonly string[];
+	readonly sources: (Source | Link)[];
 
 	constructor(
-		map: { mappings: SourceMapSegment[][]; names: string[] },
+		map: { mappings: readonly SourceMapSegment[][]; names: readonly string[] },
 		sources: (Source | Link)[]
 	) {
 		this.sources = sources;
@@ -48,8 +49,10 @@ class Link {
 
 	traceMappings() {
 		const sources: string[] = [];
-		const sourcesContent: string[] = [];
+		const sourceIndexMap = new Map<string, number>();
+		const sourcesContent: (string | null)[] = [];
 		const names: string[] = [];
+		const nameIndexMap = new Map<string, number>();
 
 		const mappings = [];
 
@@ -57,7 +60,7 @@ class Link {
 			const tracedLine: SourceMapSegment[] = [];
 
 			for (const segment of line) {
-				if (segment.length == 1) continue;
+				if (segment.length === 1) continue;
 				const source = this.sources[segment[1]];
 				if (!source) continue;
 
@@ -68,35 +71,32 @@ class Link {
 				);
 
 				if (traced) {
-					// newer sources are more likely to be used, so search backwards.
-					let sourceIndex = sources.lastIndexOf(traced.source.filename);
-					if (sourceIndex === -1) {
+					const {
+						column,
+						line,
+						name,
+						source: { content, filename }
+					} = traced;
+					let sourceIndex = sourceIndexMap.get(filename);
+					if (sourceIndex === undefined) {
 						sourceIndex = sources.length;
-						sources.push(traced.source.filename);
-						sourcesContent[sourceIndex] = traced.source.content;
+						sources.push(filename);
+						sourceIndexMap.set(filename, sourceIndex);
+						sourcesContent[sourceIndex] = content;
 					} else if (sourcesContent[sourceIndex] == null) {
-						sourcesContent[sourceIndex] = traced.source.content;
-					} else if (
-						traced.source.content != null &&
-						sourcesContent[sourceIndex] !== traced.source.content
-					) {
-						return error({
-							message: `Multiple conflicting contents for sourcemap source ${traced.source.filename}`
-						});
+						sourcesContent[sourceIndex] = content;
+					} else if (content != null && sourcesContent[sourceIndex] !== content) {
+						return error(logConflictingSourcemapSources(filename));
 					}
 
-					const tracedSegment: SourceMapSegment = [
-						segment[0],
-						sourceIndex,
-						traced.line,
-						traced.column
-					];
+					const tracedSegment: SourceMapSegment = [segment[0], sourceIndex, line, column];
 
-					if (traced.name) {
-						let nameIndex = names.indexOf(traced.name);
-						if (nameIndex === -1) {
+					if (name) {
+						let nameIndex = nameIndexMap.get(name);
+						if (nameIndex === undefined) {
 							nameIndex = names.length;
-							names.push(traced.name);
+							names.push(name);
+							nameIndexMap.set(name, nameIndex);
 						}
 
 						(tracedSegment as SourceMapSegment)[4] = nameIndex;
@@ -109,7 +109,7 @@ class Link {
 			mappings.push(tracedLine);
 		}
 
-		return { sources, sourcesContent, names, mappings };
+		return { mappings, names, sources, sourcesContent };
 	}
 
 	traceSegment(line: number, column: number, name: string): SourceMapSegmentObject | null {
@@ -117,13 +117,17 @@ class Link {
 		if (!segments) return null;
 
 		// binary search through segments for the given column
-		let i = 0;
-		let j = segments.length - 1;
+		let searchStart = 0;
+		let searchEnd = segments.length - 1;
 
-		while (i <= j) {
-			const m = (i + j) >> 1;
+		while (searchStart <= searchEnd) {
+			const m = (searchStart + searchEnd) >> 1;
 			const segment = segments[m];
-			if (segment[0] === column) {
+
+			// If a sourcemap does not have sufficient resolution to contain a
+			// necessary mapping, e.g. because it only contains line information, we
+			// use the best approximation we could find
+			if (segment[0] === column || searchStart === searchEnd) {
 				if (segment.length == 1) return null;
 				const source = this.sources[segment[1]];
 				if (!source) return null;
@@ -135,9 +139,9 @@ class Link {
 				);
 			}
 			if (segment[0] > column) {
-				j = m - 1;
+				searchEnd = m - 1;
 			} else {
-				i = m + 1;
+				searchStart = m + 1;
 			}
 		}
 
@@ -145,21 +149,13 @@ class Link {
 	}
 }
 
-function getLinkMap(warn: WarningHandler) {
-	return function linkMap(source: Source | Link, map: DecodedSourceMapOrMissing) {
-		if (map.mappings) {
+function getLinkMap(log: LogHandler) {
+	return function linkMap(source: Source | Link, map: DecodedSourceMapOrMissing): Link {
+		if (!map.missing) {
 			return new Link(map, [source]);
 		}
 
-		warn({
-			code: 'SOURCEMAP_BROKEN',
-			message:
-				`Sourcemap is likely to be incorrect: a plugin (${map.plugin}) was used to transform ` +
-				"files, but didn't generate a sourcemap for the transformation. Consult the plugin " +
-				'documentation for help',
-			plugin: map.plugin,
-			url: `https://rollupjs.org/guide/en/#warning-sourcemap-is-likely-to-be-incorrect`
-		});
+		log(LOGLEVEL_WARN, logSourcemapBroken(map.plugin));
 
 		return new Link(
 			{
@@ -175,23 +171,23 @@ function getCollapsedSourcemap(
 	id: string,
 	originalCode: string,
 	originalSourcemap: ExistingDecodedSourceMap | null,
-	sourcemapChain: DecodedSourceMapOrMissing[],
+	sourcemapChain: readonly DecodedSourceMapOrMissing[],
 	linkMap: (source: Source | Link, map: DecodedSourceMapOrMissing) => Link
 ): Source | Link {
 	let source: Source | Link;
 
-	if (!originalSourcemap) {
-		source = new Source(id, originalCode);
-	} else {
+	if (originalSourcemap) {
 		const sources = originalSourcemap.sources;
 		const sourcesContent = originalSourcemap.sourcesContent || [];
 		const directory = dirname(id) || '.';
 		const sourceRoot = originalSourcemap.sourceRoot || '.';
 
 		const baseSources = sources.map(
-			(source, i) => new Source(resolve(directory, sourceRoot, source), sourcesContent[i])
+			(source, index) => new Source(resolve(directory, sourceRoot, source), sourcesContent[index])
 		);
 		source = new Link(originalSourcemap, baseSources);
+	} else {
+		source = new Source(id, originalCode);
 	}
 	return sourcemapChain.reduce(linkMap, source);
 }
@@ -199,12 +195,12 @@ function getCollapsedSourcemap(
 export function collapseSourcemaps(
 	file: string,
 	map: DecodedSourceMap,
-	modules: Module[],
-	bundleSourcemapChain: DecodedSourceMapOrMissing[],
+	modules: readonly Module[],
+	bundleSourcemapChain: readonly DecodedSourceMapOrMissing[],
 	excludeContent: boolean | undefined,
-	warn: WarningHandler
-) {
-	const linkMap = getLinkMap(warn);
+	log: LogHandler
+): SourceMap {
+	const linkMap = getLinkMap(log);
 	const moduleSources = modules
 		.filter(module => !module.excludeFromSourcemap)
 		.map(module =>
@@ -217,12 +213,8 @@ export function collapseSourcemaps(
 			)
 		);
 
-	// DecodedSourceMap (from magic-string) uses a number[] instead of the more
-	// correct SourceMapSegment tuples. Cast it here to gain type safety.
-	let source = new Link(map as ExistingDecodedSourceMap, moduleSources);
-
-	source = bundleSourcemapChain.reduce(linkMap, source);
-
+	const link = new Link(map, moduleSources);
+	const source = bundleSourcemapChain.reduce(linkMap, link);
 	let { sources, sourcesContent, names, mappings } = source.traceMappings();
 
 	if (file) {
@@ -233,17 +225,21 @@ export function collapseSourcemaps(
 
 	sourcesContent = (excludeContent ? null : sourcesContent) as string[];
 
-	return new SourceMap({ file, sources, sourcesContent, names, mappings });
+	for (const module of modules) {
+		resetSourcemapCache(module.originalSourcemap, module.sourcemapChain);
+	}
+
+	return new SourceMap({ file, mappings, names, sources, sourcesContent });
 }
 
 export function collapseSourcemap(
 	id: string,
 	originalCode: string,
 	originalSourcemap: ExistingDecodedSourceMap | null,
-	sourcemapChain: DecodedSourceMapOrMissing[],
-	warn: WarningHandler
+	sourcemapChain: readonly DecodedSourceMapOrMissing[],
+	log: LogHandler
 ): ExistingDecodedSourceMap | null {
-	if (!sourcemapChain.length) {
+	if (sourcemapChain.length === 0) {
 		return originalSourcemap;
 	}
 
@@ -252,8 +248,8 @@ export function collapseSourcemap(
 		originalCode,
 		originalSourcemap,
 		sourcemapChain,
-		getLinkMap(warn)
+		getLinkMap(log)
 	) as Link;
 	const map = source.traceMappings();
-	return { version: 3, ...map };
+	return decodedSourcemap({ version: 3, ...map });
 }

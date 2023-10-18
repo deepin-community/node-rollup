@@ -1,14 +1,10 @@
-define(['exports', './generated-dep', 'external'], function (exports, dep, external) { 'use strict';
+define(['exports', './main1', 'external'], (function (exports, main1, external) { 'use strict';
 
 
 
 	Object.defineProperty(exports, 'dep', {
 		enumerable: true,
-		get: function () {
-			return external.asdf;
-		}
+		get: function () { return external.asdf; }
 	});
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

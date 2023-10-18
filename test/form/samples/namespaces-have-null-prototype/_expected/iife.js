@@ -6,8 +6,8 @@ var myBundle = (function (exports) {
 
 	var namespace = /*#__PURE__*/Object.freeze({
 		__proto__: null,
-		foo: foo,
-		bar: bar
+		bar: bar,
+		foo: foo
 	});
 
 	console.log( Object.keys( namespace ) );
@@ -18,8 +18,6 @@ var myBundle = (function (exports) {
 	exports.a = a;
 	exports.b = b;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
 	return exports;
 
-}({}));
+})({});

@@ -1,12 +1,12 @@
-System.register([], function (exports) {
+System.register([], (function (exports) {
 	'use strict';
 	return {
-		execute: function () {
+		execute: (function () {
 
 			let foo = exports('foo', 'foo');
 
-			foo = exports('foo', 'bar');
+			exports('foo', foo = 'bar');
 
-		}
+		})
 	};
-});
+}));

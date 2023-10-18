@@ -2,3 +2,22 @@ Depends: @, @builddeps@
 Restrictions: allow-stderr
 Features: test-name=rebuild-itself
 Test-Command: dh_auto_configure --buildsystem=nodejs && ./debian/rules override_dh_auto_build
+
+Tests: runtestsuite
+Depends: @, @builddeps@
+ , dh-nodejs
+ , mocha
+ , node-buble
+ , node-es6-shim
+ , node-fast-diff
+ , node-fs-extra
+ , node-functional-red-black-tree
+ , node-regexpp
+ , node-requirejs
+ , node-rollup-plugin-buble
+ , node-rollup-plugin-replace
+ , node-rollup-plugin-terser
+ , node-rxjs
+ , node-source-map-support
+ , terser
+Restrictions: allow-stderr

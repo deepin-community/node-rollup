@@ -1,17 +1,15 @@
 Description: commonjs plugin has to be applied outside node_modules
-Author: Xavier Guimard <yadd@debian.org>
+Author: Yadd <yadd@debian.org>
 Forwarded: not-needed
-Last-Update: 2021-01-29
+Last-Update: 2022-04-25
 
---- a/rollup.config.js
-+++ b/rollup.config.js
-@@ -69,7 +69,8 @@
- 	resolve(resOpt),
- 	json(),
+--- a/rollup.config.ts
++++ b/rollup.config.ts
+@@ -45,7 +45,6 @@
  	string({ include: '**/*.md' }),
--	commonjs({ include: 'node_modules/**' }),
-+	//commonjs({ include: 'node_modules/**' }),
-+	commonjs(),
- 	typescript()
- ];
- 
+ 	commonjs({
+ 		ignoreTryCatch: false,
+-		include: 'node_modules/**'
+ 	}),
+ 	typescript(),
+ 	cleanBeforeWrite('dist')

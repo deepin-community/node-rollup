@@ -1,32 +1,96 @@
 Description: fix shebang
 Author: Xavier Guimard <yadd@debian.org>
 Forwarded: not-needed
-Last-Update: 2020-09-28
+Last-Update: 2021-12-15
 
---- a/build-plugins/add-cli-entry.js
-+++ b/build-plugins/add-cli-entry.js
-@@ -14,7 +14,7 @@
+--- a/build-plugins/add-cli-entry.ts
++++ b/build-plugins/add-cli-entry.ts
+@@ -19,7 +19,7 @@
  		renderChunk(code, chunkInfo) {
- 			if (chunkInfo.fileName === 'bin/rollup') {
+ 			if (chunkInfo.fileName === CLI_CHUNK) {
  				const magicString = new MagicString(code);
 -				magicString.prepend('#!/usr/bin/env node\n\n');
 +				magicString.prepend('#!/usr/bin/node\n\n');
  				return { code: magicString.toString(), map: magicString.generateMap({ hires: true }) };
  			}
- 		}
---- a/scripts/post-comment.js
-+++ b/scripts/post-comment.js
-@@ -1,4 +1,4 @@
--#!/usr/bin/env node
-+#!/usr/bin/node
- 
- const path = require('path');
- const fetch = require('node-fetch');
+ 			return null;
 --- a/scripts/update-snapshots.js
 +++ b/scripts/update-snapshots.js
 @@ -1,4 +1,4 @@
 -#!/usr/bin/env node
 +#!/usr/bin/node
  
- const { readdirSync, copydirSync, copyFileSync, rimrafSync } = require('sander');
- const { resolve, join } = require('path');
+ import { readdirSync } from 'node:fs';
+ import { dirname, join, resolve } from 'node:path';
+--- a/test/cli/samples/config-mjs-plugins/_expected.js
++++ b/test/cli/samples/config-mjs-plugins/_expected.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 'use strict';
+ 
+ console.log('nested/plugin.mjs');
+--- a/test/cli/samples/stdin/force-stdin-tty/wrapper.js
++++ b/test/cli/samples/stdin/force-stdin-tty/wrapper.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ process.stdin.isTTY = true;
+ require('../../../../../dist/bin/rollup');
+--- a/test/cli/samples/stdin/no-stdin-tty/wrapper.js
++++ b/test/cli/samples/stdin/no-stdin-tty/wrapper.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ process.stdin.isTTY = true;
+ require('../../../../../dist/bin/rollup');
+--- a/test/cli/samples/stdin/stdin-error/wrapper.js
++++ b/test/cli/samples/stdin/stdin-error/wrapper.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ const { Readable } = require('stream');
+ delete process.stdin;
+--- a/test/cli/samples/stdout-code-splitting/wrapper.js
++++ b/test/cli/samples/stdout-code-splitting/wrapper.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ process.stdout.isTTY = true;
+ require('../../../../dist/bin/rollup');
+--- a/test/cli/samples/watch/clearScreen/wrapper.js
++++ b/test/cli/samples/watch/clearScreen/wrapper.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ process.stdout.isTTY = true;
+ process.stderr.isTTY = true;
+--- a/test/cli/samples/watch/close-stdin/wrapper.js
++++ b/test/cli/samples/watch/close-stdin/wrapper.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ const { mkdirSync, readFileSync, writeFileSync } = require('node:fs');
+ const { resolve } = require('node:path');
+--- a/test/cli/samples/watch/no-clearScreen-command/wrapper.js
++++ b/test/cli/samples/watch/no-clearScreen-command/wrapper.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ process.stdout.isTTY = true;
+ process.stderr.isTTY = true;
+--- a/test/cli/samples/watch/no-clearScreen/wrapper.js
++++ b/test/cli/samples/watch/no-clearScreen/wrapper.js
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env node
++#!/usr/bin/node
+ 
+ process.stdout.isTTY = true;
+ process.stderr.isTTY = true;

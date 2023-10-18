@@ -1,19 +1,19 @@
-import { AstContext } from '../../Module';
-import Identifier from '../nodes/Identifier';
-import { ExpressionEntity } from '../nodes/shared/Expression';
-import LocalVariable from '../variables/LocalVariable';
+import type { AstContext } from '../../Module';
+import type Identifier from '../nodes/Identifier';
+import type { ExpressionEntity } from '../nodes/shared/Expression';
+import type LocalVariable from '../variables/LocalVariable';
 import BlockScope from './BlockScope';
 
 export default class TrackingScope extends BlockScope {
-	public hoistedDeclarations: Identifier[] = [];
+	readonly hoistedDeclarations: Identifier[] = [];
 
 	addDeclaration(
 		identifier: Identifier,
 		context: AstContext,
-		init: ExpressionEntity | null,
+		init: ExpressionEntity,
 		isHoisted: boolean
 	): LocalVariable {
 		this.hoistedDeclarations.push(identifier);
-		return this.parent.addDeclaration(identifier, context, init, isHoisted);
+		return super.addDeclaration(identifier, context, init, isHoisted);
 	}
 }

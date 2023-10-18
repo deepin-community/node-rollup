@@ -1,4 +1,4 @@
-System.register('myBundle', ['a', 'b'], function () {
+System.register('myBundle', ['a', 'b'], (function () {
 	'use strict';
 	var a, b;
 	return {
@@ -7,10 +7,10 @@ System.register('myBundle', ['a', 'b'], function () {
 		}, function (module) {
 			b = module.default;
 		}],
-		execute: function () {
+		execute: (function () {
 
 			console.log(a, b);
 
-		}
+		})
 	};
-});
+}));

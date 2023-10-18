@@ -3,15 +3,50 @@
 <!-- /TITLE -->
 
 <!-- BADGES/ -->
-[![NPM version](https://img.shields.io/npm/v/package-name-regex.svg)](https://npmjs.org/package/package-name-regex)
-![Linux macOS Windows compatible](https://img.shields.io/badge/os-linux%20%7C%C2%A0macos%20%7C%C2%A0windows-blue)
-
-[![Build status](https://img.shields.io/github/workflow/status/dword-design/package-name-regex/build)](https://github.com/dword-design/package-name-regex/actions)
-[![Coverage status](https://img.shields.io/coveralls/dword-design/package-name-regex)](https://coveralls.io/github/dword-design/package-name-regex)
-[![Dependency status](https://img.shields.io/david/dword-design/package-name-regex)](https://david-dm.org/dword-design/package-name-regex)
-![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen)
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/dword-design/package-name-regex)
+  <p>
+    <a href="https://npmjs.org/package/package-name-regex">
+      <img
+        src="https://img.shields.io/npm/v/package-name-regex.svg"
+        alt="npm version"
+      >
+    </a><img src="https://img.shields.io/badge/os-linux%20%7C%C2%A0macos%20%7C%C2%A0windows-blue" alt="Linux macOS Windows compatible"><a href="https://github.com/dword-design/package-name-regex/actions">
+      <img
+        src="https://github.com/dword-design/package-name-regex/workflows/build/badge.svg"
+        alt="Build status"
+      >
+    </a><a href="https://codecov.io/gh/dword-design/package-name-regex">
+      <img
+        src="https://codecov.io/gh/dword-design/package-name-regex/branch/master/graph/badge.svg"
+        alt="Coverage status"
+      >
+    </a><a href="https://david-dm.org/dword-design/package-name-regex">
+      <img src="https://img.shields.io/david/dword-design/package-name-regex" alt="Dependency status">
+    </a><img src="https://img.shields.io/badge/renovate-enabled-brightgreen" alt="Renovate enabled"><br/><a href="https://gitpod.io/#https://github.com/dword-design/package-name-regex">
+      <img
+        src="https://gitpod.io/button/open-in-gitpod.svg"
+        alt="Open in Gitpod"
+        width="114"
+      >
+    </a><a href="https://www.buymeacoffee.com/dword">
+      <img
+        src="https://www.buymeacoffee.com/assets/img/guidelines/download-assets-sm-2.svg"
+        alt="Buy Me a Coffee"
+        width="114"
+      >
+    </a><a href="https://paypal.me/SebastianLandwehr">
+      <img
+        src="https://sebastianlandwehr.com/images/paypal.svg"
+        alt="PayPal"
+        width="163"
+      >
+    </a><a href="https://www.patreon.com/dworddesign">
+      <img
+        src="https://sebastianlandwehr.com/images/patreon.svg"
+        alt="Patreon"
+        width="163"
+      >
+    </a>
+</p>
 <!-- /BADGES -->
 
 
@@ -20,10 +55,10 @@ Provides a regex that can be used to test if a string is a valid NPM package nam
 <!-- /DESCRIPTION -->
 
 <!-- INSTALL/ -->
-# Install
+## Install
 
 ```bash
-# NPM
+# npm
 $ npm install package-name-regex
 
 # Yarn
@@ -46,13 +81,41 @@ packageNameRegex.test('@npm-zors/money!time.js') // false
 ```
 
 <!-- LICENSE/ -->
-# License
+## Contribute
 
-Unless stated otherwise all works are:
+Are you missing something or want to contribute? Feel free to file an [issue](https://github.com/dword-design/package-name-regex/issues) or a [pull request](https://github.com/dword-design/package-name-regex/pulls)! ⚙️
 
-Copyright &copy; Sebastian Landwehr <info@dword-design.de>
+## Support
 
-and licensed under:
+Hey, I am Sebastian Landwehr, a freelance web developer, and I love developing web apps and open source packages. If you want to support me so that I can keep packages up to date and build more helpful tools, you can donate here:
 
-[MIT License](https://opensource.org/licenses/MIT)
+<p>
+  <a href="https://www.buymeacoffee.com/dword">
+    <img
+      src="https://www.buymeacoffee.com/assets/img/guidelines/download-assets-sm-2.svg"
+      alt="Buy Me a Coffee"
+      width="114"
+    >
+  </a>&nbsp;If you want to send me a one time donation. The coffee is pretty good 😊.<br/>
+  <a href="https://paypal.me/SebastianLandwehr">
+    <img
+      src="https://sebastianlandwehr.com/images/paypal.svg"
+      alt="PayPal"
+      width="163"
+    >
+  </a>&nbsp;Also for one time donations if you like PayPal.<br/>
+  <a href="https://www.patreon.com/dworddesign">
+    <img
+      src="https://sebastianlandwehr.com/images/patreon.svg"
+      alt="Patreon"
+      width="163"
+    >
+  </a>&nbsp;Here you can support me regularly, which is great so I can steadily work on projects.
+</p>
+
+Thanks a lot for your support! ❤️
+
+## License
+
+[MIT License](https://opensource.org/licenses/MIT) © [Sebastian Landwehr](https://sebastianlandwehr.com)
 <!-- /LICENSE -->

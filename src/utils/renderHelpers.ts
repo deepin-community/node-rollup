@@ -1,20 +1,21 @@
-import MagicString from 'magic-string';
-import { Node, StatementNode } from '../ast/nodes/shared/Node';
-import Variable from '../ast/variables/Variable';
-import { InternalModuleFormat } from '../rollup/types';
-import { PluginDriver } from './PluginDriver';
+import type MagicString from 'magic-string';
+import type { Node, StatementNode } from '../ast/nodes/shared/Node';
+import type Variable from '../ast/variables/Variable';
+import type { InternalModuleFormat } from '../rollup/types';
+import type { PluginDriver } from './PluginDriver';
+import type { GenerateCodeSnippets } from './generateCodeSnippets';
 import { treeshakeNode } from './treeshakeNode';
 
 export interface RenderOptions {
-	compact: boolean;
 	dynamicImportFunction: string | undefined;
 	exportNamesByVariable: Map<Variable, string[]>;
 	format: InternalModuleFormat;
 	freeze: boolean;
 	indent: string;
 	namespaceToStringTag: boolean;
-	outputPluginDriver: PluginDriver;
-	varOrConst: 'var' | 'const';
+	pluginDriver: PluginDriver;
+	snippets: GenerateCodeSnippets;
+	useOriginalName: ((variable: Variable) => boolean) | null;
 }
 
 export interface NodeRenderOptions {
@@ -23,16 +24,24 @@ export interface NodeRenderOptions {
 	isNoStatement?: boolean;
 	isShorthandProperty?: boolean;
 	preventASI?: boolean;
-	renderedParentType?: string; // also serves as a flag if the rendered parent is different from the actual parent
-	renderedSurroundingElement?: string; // same as parent type, but for changed non-direct parents that directly preceed elements
+	/* Indicates if the direct parent of an element changed.
+	Necessary for determining the "this" context of callees. */
+	renderedParentType?: string;
+	/* Indicates if the parent or ancestor surrounding an element has changed and what it changed to.
+	Necessary for adding parentheses. */
+	renderedSurroundingElement?: string;
 	start?: number;
 }
 
 export const NO_SEMICOLON: NodeRenderOptions = { isNoStatement: true };
 
 // This assumes there are only white-space and comments between start and the string we are looking for
-export function findFirstOccurrenceOutsideComment(code: string, searchString: string, start = 0) {
-	let searchPos, charCodeAfterSlash;
+export function findFirstOccurrenceOutsideComment(
+	code: string,
+	searchString: string,
+	start = 0
+): number {
+	let searchPos: number, charCodeAfterSlash: number;
 	searchPos = code.indexOf(searchString, start);
 	while (true) {
 		start = code.indexOf('/', start);
@@ -53,7 +62,7 @@ export function findFirstOccurrenceOutsideComment(code: string, searchString: st
 
 const NON_WHITESPACE = /\S/g;
 
-export function findNonWhiteSpace(code: string, index: number) {
+export function findNonWhiteSpace(code: string, index: number): number {
 	NON_WHITESPACE.lastIndex = index;
 	const result = NON_WHITESPACE.exec(code)!;
 	return result.index;
@@ -61,7 +70,7 @@ export function findNonWhiteSpace(code: string, index: number) {
 
 // This assumes "code" only contains white-space and comments
 // Returns position of line-comment if applicable
-function findFirstLineBreakOutsideComment(code: string): [number, number] {
+export function findFirstLineBreakOutsideComment(code: string): [number, number] {
 	let lineBreakPos,
 		charCodeAfterSlash,
 		start = 0;
@@ -81,12 +90,12 @@ function findFirstLineBreakOutsideComment(code: string): [number, number] {
 }
 
 export function renderStatementList(
-	statements: StatementNode[],
+	statements: readonly StatementNode[],
 	code: MagicString,
 	start: number,
 	end: number,
 	options: RenderOptions
-) {
+): void {
 	let currentNode, currentNodeStart, currentNodeNeedsBoundaries, nextNodeStart;
 	let nextNode = statements[0];
 	let nextNodeNeedsBoundaries = !nextNode.included || nextNode.needsBoundaries;
@@ -126,7 +135,7 @@ export function renderStatementList(
 
 // This assumes that the first character is not part of the first node
 export function getCommaSeparatedNodesWithBoundaries<N extends Node>(
-	nodes: N[],
+	nodes: readonly N[],
 	code: MagicString,
 	start: number,
 	end: number
@@ -138,11 +147,10 @@ export function getCommaSeparatedNodesWithBoundaries<N extends Node>(
 	start: number;
 }[] {
 	const splitUpNodes = [];
-	let node, nextNode, nextNodeStart, contentEnd, char;
+	let node, nextNodeStart, contentEnd, char;
 	let separator = start - 1;
 
-	for (let nextIndex = 0; nextIndex < nodes.length; nextIndex++) {
-		nextNode = nodes[nextIndex];
+	for (const nextNode of nodes) {
 		if (node !== undefined) {
 			separator =
 				node.end +
@@ -180,7 +188,7 @@ export function getCommaSeparatedNodesWithBoundaries<N extends Node>(
 }
 
 // This assumes there are only white-space and comments between start and end
-export function removeLineBreaks(code: MagicString, start: number, end: number) {
+export function removeLineBreaks(code: MagicString, start: number, end: number): void {
 	while (true) {
 		const [removeStart, removeEnd] = findFirstLineBreakOutsideComment(
 			code.original.slice(start, end)

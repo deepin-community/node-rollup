@@ -1,13 +1,13 @@
-const rollup = require('../../dist/rollup');
-const assert = require('assert');
+const assert = require('node:assert');
+const { rollup } = require('../../dist/rollup');
 const { loader } = require('../utils.js');
 const { compareError } = require('../utils.js');
 
 function runTestCode(code, globals) {
-	const globalsWithAssert = Object.assign({}, globals, { assert });
+	const globalsWithAssert = { ...globals, assert };
 	const globalKeys = Object.keys(globalsWithAssert);
-	const fn = new Function(globalKeys, code);
-	fn.apply(
+	const function_ = new Function(globalKeys, code);
+	function_.apply(
 		globals,
 		globalKeys.map(key => globalsWithAssert[key])
 	);
@@ -17,7 +17,7 @@ function runIifeTest(code, outputOptions) {
 	const bundleName = outputOptions.name.split('.')[0];
 	const globals = { external: 'external', __exports: {} };
 	runTestCode(
-		bundleName && bundleName.indexOf('@') === -1
+		bundleName && !bundleName.includes('@')
 			? `${code}if (typeof ${bundleName} !== 'undefined') __exports.${bundleName} = ${bundleName};`
 			: code,
 		globals
@@ -29,44 +29,41 @@ function getIifeExports(global, outputOptions) {
 	if (outputOptions.name) {
 		return outputOptions.name
 			.split('.')
-			.reduce((currentVar, nextKey) => currentVar[nextKey] || {}, global);
+			.reduce((currentVariable, nextKey) => currentVariable[nextKey] || {}, global);
 	}
 	return {};
 }
 
 function getIifeCode(inputCode, outputOptions) {
-	return rollup
-		.rollup({
-			input: 'input',
-			external: ['external'],
-			plugins: [loader({ input: inputCode })]
-		})
+	return rollup({
+		input: 'input',
+		external: ['external'],
+		plugins: [loader({ input: inputCode })]
+	})
 		.then(bundle =>
-			bundle.generate(
-				Object.assign({ format: 'iife', globals: { external: 'external' } }, outputOptions)
-			)
+			bundle.generate({ format: 'iife', globals: { external: 'external' }, ...outputOptions })
 		)
 		.then(({ output }) => output[0].code);
 }
 
 function runTestsWithCode(code, outputOptions, expectedExports) {
 	it('works with extend=false', () => {
-		const options = Object.assign({ extend: false }, outputOptions);
+		const options = { extend: false, ...outputOptions };
 		return getIifeCode(code, options).then(code =>
 			assert.deepEqual(runIifeTest(code, options), expectedExports, 'expected exports are returned')
 		);
 	});
 
 	it('works with extend=true', () => {
-		const options = Object.assign({ extend: true }, outputOptions);
+		const options = { extend: true, ...outputOptions };
 		return getIifeCode(code, options).then(code =>
 			assert.deepEqual(runIifeTest(code, options), expectedExports, 'expected exports are returned')
 		);
 	});
 }
 
-['bundle', '@my.@nested/value.bundle'].forEach(name =>
-	[false, true].forEach(compact =>
+for (const name of ['bundle', '@my.@nested/value.bundle'])
+	for (const compact of [false, true])
 		describe(`The IIFE wrapper with name="${name}", compact=${compact}`, () => {
 			const outputOptions = { compact, name };
 
@@ -95,9 +92,7 @@ function runTestsWithCode(code, outputOptions, expectedExports) {
 				runTestsWithCode('import value from "external"; export default {value};', outputOptions, {
 					value: 'external'
 				}));
-		})
-	)
-);
+		});
 
 describe('The IIFE wrapper with an illegal name', () => {
 	it('fails if the name starts with a digit', () =>
@@ -109,7 +104,8 @@ describe('The IIFE wrapper with an illegal name', () => {
 				compareError(error, {
 					code: 'ILLEGAL_IDENTIFIER_AS_NAME',
 					message:
-						'Given name "1name" is not a legal JS identifier. If you need this, you can try "output.extend: true".'
+						'Given name "1name" is not a legal JS identifier. If you need this, you can try "output.extend: true".',
+					url: 'https://rollupjs.org/configuration-options/#output-extend'
 				})
 			));
 
@@ -122,7 +118,8 @@ describe('The IIFE wrapper with an illegal name', () => {
 				compareError(error, {
 					code: 'ILLEGAL_IDENTIFIER_AS_NAME',
 					message:
-						'Given name "my=name" is not a legal JS identifier. If you need this, you can try "output.extend: true".'
+						'Given name "my=name" is not a legal JS identifier. If you need this, you can try "output.extend: true".',
+					url: 'https://rollupjs.org/configuration-options/#output-extend'
 				})
 			));
 
@@ -137,9 +134,7 @@ describe('The IIFE wrapper with an illegal name', () => {
 					'\n' +
 					'\texports.x = x;\n' +
 					'\n' +
-					"\tObject.defineProperty(exports, '__esModule', { value: true });\n" +
-					'\n' +
-					"}(this['my=name'] = this['my=name'] || {}));\n"
+					'})(this["my=name"] = this["my=name"] || {});\n'
 			)
 		));
 });

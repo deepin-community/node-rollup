@@ -1,6 +1,6 @@
-const path = require('path');
+const path = require('node:path');
 
-module.exports = {
+module.exports = defineTest({
 	description: 'supports custom rendering for dynamic imports',
 	options: {
 		plugins: {
@@ -13,10 +13,11 @@ module.exports = {
 			renderDynamicImport({ customResolution, format, moduleId, targetModuleId }) {
 				return {
 					left: `${format}SpecialHandler(`,
-					right: `, '${path.relative(__dirname, moduleId)}', '${targetModuleId &&
-						path.relative(__dirname, targetModuleId)}', ${customResolution})`
+					right: `, '${path.relative(__dirname, moduleId)}', '${
+						targetModuleId && path.relative(__dirname, targetModuleId)
+					}', ${customResolution})`
 				};
 			}
 		}
 	}
-};
+});

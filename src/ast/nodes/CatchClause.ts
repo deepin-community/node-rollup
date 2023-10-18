@@ -1,36 +1,35 @@
 import CatchScope from '../scopes/CatchScope';
-import Scope from '../scopes/Scope';
-import { UNKNOWN_EXPRESSION } from '../values';
-import BlockStatement from './BlockStatement';
-import * as NodeType from './NodeType';
-import { GenericEsTreeNode, NodeBase } from './shared/Node';
-import { PatternNode } from './shared/Pattern';
+import type Scope from '../scopes/Scope';
+import type BlockStatement from './BlockStatement';
+import type * as NodeType from './NodeType';
+import { UNKNOWN_EXPRESSION } from './shared/Expression';
+import { type GenericEsTreeNode, NodeBase } from './shared/Node';
+import type { PatternNode } from './shared/Pattern';
 
 export default class CatchClause extends NodeBase {
-	body!: BlockStatement;
-	param!: PatternNode | null;
-	preventChildBlockScope!: true;
-	scope!: CatchScope;
-	type!: NodeType.tCatchClause;
+	declare body: BlockStatement;
+	declare param: PatternNode | null;
+	declare preventChildBlockScope: true;
+	declare scope: CatchScope;
+	declare type: NodeType.tCatchClause;
 
-	createScope(parentScope: Scope) {
+	createScope(parentScope: Scope): void {
 		this.scope = new CatchScope(parentScope, this.context);
 	}
 
-	initialise() {
-		if (this.param) {
-			this.param.declare('parameter', UNKNOWN_EXPRESSION);
+	parseNode(esTreeNode: GenericEsTreeNode): void {
+		// Parameters need to be declared first as the logic is that initializers
+		// of hoisted body variables are associated with parameters of the same
+		// name instead of the variable
+		const { param } = esTreeNode;
+		if (param) {
+			(this.param as GenericEsTreeNode) = new (this.context.getNodeConstructor(param.type))(
+				param,
+				this,
+				this.scope
+			);
+			this.param!.declare('parameter', UNKNOWN_EXPRESSION);
 		}
-	}
-
-	parseNode(esTreeNode: GenericEsTreeNode) {
-		this.body = new this.context.nodeConstructors.BlockStatement(
-			esTreeNode.body,
-			this,
-			this.scope
-		) as BlockStatement;
 		super.parseNode(esTreeNode);
 	}
 }
-
-CatchClause.prototype.preventChildBlockScope = true;

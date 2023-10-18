@@ -1,46 +1,22 @@
-import { AstContext } from '../../Module';
-import { CallOptions } from '../CallOptions';
-import { HasEffectsContext } from '../ExecutionContext';
-import { ExpressionEntity } from '../nodes/shared/Expression';
-import { ObjectPath } from '../utils/PathTracker';
-import { LiteralValueOrUnknown, UnknownValue, UNKNOWN_EXPRESSION } from '../values';
-import LocalVariable from './LocalVariable';
+import type { AstContext } from '../../Module';
+import type { HasEffectsContext } from '../ExecutionContext';
+import type { NodeInteraction } from '../NodeInteractions';
+import { UNKNOWN_EXPRESSION } from '../nodes/shared/Expression';
+import { type ObjectPath } from '../utils/PathTracker';
+import ParameterVariable from './ParameterVariable';
 
-export default class ThisVariable extends LocalVariable {
+export default class ThisVariable extends ParameterVariable {
 	constructor(context: AstContext) {
-		super('this', null, null, context);
+		super('this', null, context);
 	}
 
-	getLiteralValueAtPath(): LiteralValueOrUnknown {
-		return UnknownValue;
-	}
-
-	hasEffectsWhenAccessedAtPath(path: ObjectPath, context: HasEffectsContext) {
-		return (
-			this.getInit(context).hasEffectsWhenAccessedAtPath(path, context) ||
-			super.hasEffectsWhenAccessedAtPath(path, context)
-		);
-	}
-
-	hasEffectsWhenAssignedAtPath(path: ObjectPath, context: HasEffectsContext) {
-		return (
-			this.getInit(context).hasEffectsWhenAssignedAtPath(path, context) ||
-			super.hasEffectsWhenAssignedAtPath(path, context)
-		);
-	}
-
-	hasEffectsWhenCalledAtPath(
+	hasEffectsOnInteractionAtPath(
 		path: ObjectPath,
-		callOptions: CallOptions,
+		interaction: NodeInteraction,
 		context: HasEffectsContext
-	) {
+	): boolean {
 		return (
-			this.getInit(context).hasEffectsWhenCalledAtPath(path, callOptions, context) ||
-			super.hasEffectsWhenCalledAtPath(path, callOptions, context)
-		);
-	}
-
-	private getInit(context: HasEffectsContext): ExpressionEntity {
-		return context.replacedVariableInits.get(this) || UNKNOWN_EXPRESSION;
+			context.replacedVariableInits.get(this) || UNKNOWN_EXPRESSION
+		).hasEffectsOnInteractionAtPath(path, interaction, context);
 	}
 }

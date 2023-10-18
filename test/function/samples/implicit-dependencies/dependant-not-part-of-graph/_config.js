@@ -1,6 +1,6 @@
-const path = require('path');
+const path = require('node:path');
 
-module.exports = {
+module.exports = defineTest({
 	description:
 		'throws when a module that is loaded before an emitted chunk is not part of the module graph',
 	options: {
@@ -33,8 +33,8 @@ module.exports = {
 			path.join(__dirname, 'dep1.js'),
 			path.join(__dirname, 'dep2.js'),
 			path.join(__dirname, 'dep3.js'),
-			path.join(__dirname, 'main.js'),
-			path.join(__dirname, 'dependant.js')
+			path.join(__dirname, 'dependant.js'),
+			path.join(__dirname, 'main.js')
 		]
 	}
-};
+});

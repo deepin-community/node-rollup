@@ -1,19 +1,20 @@
-module.exports = {
+module.exports = defineTest({
 	description: 'avoid variable from empty module name be empty',
 	options: {
 		input: '',
 		plugins: [
 			{
-				resolveId (importee) {
+				name: 'test-plugin',
+				resolveId() {
 					return '';
 				},
-				load (path) {
+				load() {
 					return 'export default 0;';
-				},
+				}
 			}
 		],
 		output: {
 			format: 'cjs'
 		}
 	}
-};
+});

@@ -1,9 +1,12 @@
-import Identifier from './Identifier';
-import * as NodeType from './NodeType';
+import type Identifier from './Identifier';
+import type Literal from './Literal';
+import type * as NodeType from './NodeType';
 import { NodeBase } from './shared/Node';
 
 export default class ImportSpecifier extends NodeBase {
-	imported!: Identifier;
-	local!: Identifier;
-	type!: NodeType.tImportSpecifier;
+	declare imported: Identifier | Literal<string>;
+	declare local: Identifier;
+	declare type: NodeType.tImportSpecifier;
+
+	protected applyDeoptimizations() {}
 }

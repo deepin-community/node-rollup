@@ -1,14 +1,13 @@
-const assert = require('assert');
+const assert = require('node:assert');
 
-module.exports = {
+module.exports = defineTest({
 	description: 'includes an external module with a false resolve return',
 	options: {
 		input: 'main.js',
 		plugins: [
 			{
 				resolveId(id) {
-					if (id === './external')
-						return false;
+					if (id === './external') return false;
 				}
 			}
 		]
@@ -19,4 +18,4 @@ module.exports = {
 			return 1;
 		}
 	}
-};
+});

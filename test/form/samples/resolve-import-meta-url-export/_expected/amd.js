@@ -1,4 +1,4 @@
-define(['module', 'exports'], function (module, exports) { 'use strict';
+define(['module', 'exports'], (function (module, exports) { 'use strict';
 
 	const url = 'url';
 	const meta = 'meta';
@@ -6,6 +6,4 @@ define(['module', 'exports'], function (module, exports) { 'use strict';
 	exports.meta = meta;
 	exports.url = url;
 
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-});
+}));

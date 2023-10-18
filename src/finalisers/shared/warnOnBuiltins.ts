@@ -1,49 +1,35 @@
-import { ChunkDependencies } from '../../Chunk';
-import { RollupWarning } from '../../rollup/types';
+import builtinModules from 'builtin-modules/static';
+import type { ChunkDependency } from '../../Chunk';
+import type { LogHandler } from '../../rollup/types';
+import { LOGLEVEL_WARN } from '../../utils/logging';
+import { logMissingNodeBuiltins } from '../../utils/logs';
 
-const builtins = {
-	assert: true,
-	buffer: true,
-	console: true,
-	constants: true,
-	domain: true,
-	events: true,
-	http: true,
-	https: true,
-	os: true,
-	path: true,
-	process: true,
-	punycode: true,
-	querystring: true,
-	stream: true,
-	string_decoder: true,
-	timers: true,
-	tty: true,
-	url: true,
-	util: true,
-	vm: true,
-	zlib: true
-};
+const nodeBuiltins: ReadonlySet<string> = new Set([
+	...builtinModules,
+	// TODO
+	// remove once builtin-modules includes PR: https://github.com/sindresorhus/builtin-modules/pull/17
+	'assert/strict',
+	'dns/promises',
+	'fs/promises',
+	'path/posix',
+	'path/win32',
+	'readline/promises',
+	'stream/consumers',
+	'stream/promises',
+	'stream/web',
+	'timers/promises',
+	'util/types'
+]);
 
 export default function warnOnBuiltins(
-	warn: (warning: RollupWarning) => void,
-	dependencies: ChunkDependencies
-) {
-	const externalBuiltins = dependencies.map(({ id }) => id).filter(id => id in builtins);
+	log: LogHandler,
+	dependencies: readonly ChunkDependency[]
+): void {
+	const externalBuiltins = dependencies
+		.map(({ importPath }) => importPath)
+		.filter(importPath => nodeBuiltins.has(importPath) || importPath.startsWith('node:'));
 
-	if (!externalBuiltins.length) return;
+	if (externalBuiltins.length === 0) return;
 
-	const detail =
-		externalBuiltins.length === 1
-			? `module ('${externalBuiltins[0]}')`
-			: `modules (${externalBuiltins
-					.slice(0, -1)
-					.map(name => `'${name}'`)
-					.join(', ')} and '${externalBuiltins.slice(-1)}')`;
-
-	warn({
-		code: 'MISSING_NODE_BUILTINS',
-		message: `Creating a browser bundle that depends on Node.js built-in ${detail}. You might need to include https://github.com/ionic-team/rollup-plugin-node-polyfills`,
-		modules: externalBuiltins
-	});
+	log(LOGLEVEL_WARN, logMissingNodeBuiltins(externalBuiltins));
 }

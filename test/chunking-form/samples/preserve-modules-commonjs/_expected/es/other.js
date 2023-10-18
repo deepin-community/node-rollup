@@ -1,4 +1,5 @@
-import { __exports as other } from './_virtual/other.js_commonjs-exports';
-export { __exports as default } from './_virtual/other.js_commonjs-exports';
+import { __exports as other } from './_virtual/other.js';
 
 other.value = 43;
+
+export { other as default };

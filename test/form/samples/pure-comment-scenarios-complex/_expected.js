@@ -1,5 +1,6 @@
 // pure top-level IIFE will be dropped
 
+
 // pure top-level IIFE assigned to unreferenced var will not be dropped
 global.iife1 = /*@__PURE__*/(function() {
 	console.log("iife1");
@@ -7,8 +8,8 @@ global.iife1 = /*@__PURE__*/(function() {
 	return iife1;
 })();
 
-// comment #__PURE__ comment
-bar(), baz(), quux();
+
+baz(), quux();
 a.b(), f.g();
 /* @__PURE__ */(function(){})() || true ? foo() : bar();
 foo() ;

@@ -1,69 +1,40 @@
 {
-  "_args": [
-    [
-      "package-name-regex@1.0.8",
-      "/home/xavier/dev/debian/src/pkg-js/packages/rollup-2.28.2"
-    ]
-  ],
-  "_development": true,
-  "_from": "package-name-regex@1.0.8",
-  "_id": "package-name-regex@1.0.8",
-  "_inBundle": false,
-  "_integrity": "sha512-g3vB2J62dLqf4m50VM4tJUC4sixw3JB+Igd0cF3P/gJhAvmvsmFEV2eWZTeLbwfkKEWTf3+gwQ2C6JFFRxWHEQ==",
-  "_location": "/package-name-regex",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "version",
-    "registry": true,
-    "raw": "package-name-regex@1.0.8",
-    "name": "package-name-regex",
-    "escapedName": "package-name-regex",
-    "rawSpec": "1.0.8",
-    "saveSpec": null,
-    "fetchSpec": "1.0.8"
-  },
-  "_requiredBy": [
-    "/rollup-plugin-license"
-  ],
-  "_resolved": "https://registry.npmjs.org/package-name-regex/-/package-name-regex-1.0.8.tgz",
-  "_spec": "1.0.8",
-  "_where": "/home/xavier/dev/debian/src/pkg-js/packages/rollup-2.28.2",
-  "author": {
-    "name": "Sebastian Landwehr",
-    "email": "info@dword-design.de"
-  },
-  "bugs": {
-    "url": "https://github.com/dword-design/package-name-regex/issues"
-  },
+  "name": "package-name-regex",
+  "version": "2.0.6",
   "description": "Provides a regex that can be used to test if a string is a valid NPM package name.",
-  "devDependencies": {
-    "@dword-design/base": "^6.0.0"
-  },
-  "files": [
-    "dist"
-  ],
-  "homepage": "https://github.com/dword-design/package-name-regex#readme",
   "keywords": [
+    "match",
     "name",
     "package",
     "regex",
+    "regexp",
     "test",
     "validate"
   ],
+  "repository": "dword-design/package-name-regex",
+  "funding": "https://github.com/sponsors/dword-design",
   "license": "MIT",
+  "author": "Sebastian Landwehr <info@sebastianlandwehr.com>",
   "main": "dist/index.js",
-  "name": "package-name-regex",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dword-design/package-name-regex.git"
-  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "checkUnknownFiles": "base checkUnknownFiles",
     "commit": "base commit",
-    "depgraph": "base depgraph",
+    "dev": "base dev",
+    "lint": "base lint",
     "prepare": "base prepare",
     "prepublishOnly": "base prepublishOnly",
-    "release": "base release",
     "test": "base test"
   },
-  "version": "1.0.8"
+  "devDependencies": {
+    "@dword-design/base": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

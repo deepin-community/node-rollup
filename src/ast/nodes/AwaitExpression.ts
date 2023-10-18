@@ -1,18 +1,20 @@
-import { HasEffectsContext, InclusionContext } from '../ExecutionContext';
+import type { InclusionContext } from '../ExecutionContext';
 import ArrowFunctionExpression from './ArrowFunctionExpression';
-import * as NodeType from './NodeType';
+import type * as NodeType from './NodeType';
 import FunctionNode from './shared/FunctionNode';
-import { ExpressionNode, IncludeChildren, Node, NodeBase } from './shared/Node';
+import { type ExpressionNode, type IncludeChildren, type Node, NodeBase } from './shared/Node';
 
 export default class AwaitExpression extends NodeBase {
-	argument!: ExpressionNode;
-	type!: NodeType.tAwaitExpression;
+	declare argument: ExpressionNode;
+	declare type: NodeType.tAwaitExpression;
 
-	hasEffects(context: HasEffectsContext) {
-		return !context.ignore.returnAwaitYield || this.argument.hasEffects(context);
+	hasEffects(): boolean {
+		if (!this.deoptimized) this.applyDeoptimizations();
+		return true;
 	}
 
-	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
+		if (!this.deoptimized) this.applyDeoptimizations();
 		if (!this.included) {
 			this.included = true;
 			checkTopLevelAwait: if (!this.context.usesTopLevelAwait) {

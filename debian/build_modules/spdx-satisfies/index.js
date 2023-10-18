@@ -76,7 +76,7 @@ function normalizeGPLIdentifiers (argument) {
 }
 
 function endsWith (string, substring) {
-  return string.indexOf(substring) === string.length - 1
+  return string.indexOf(substring) === string.length - substring.length
 }
 
 function licenseString (e) {
@@ -89,13 +89,13 @@ function licenseString (e) {
 // `[[GPL-3.0 AND MIT], [ISC AND MIT]]`. Note that within each array of licenses, the entries are
 // normalized (sorted) by license name.
 function expand (expression) {
-  return sort(Array.from(expandInner(expression)))
+  return sort(expandInner(expression))
 }
 
 // Flatten the given expression into an array of all licenses mentioned in the expression.
 function flatten (expression) {
-  const expanded = Array.from(expandInner(expression))
-  const flattened = expanded.reduce(function (result, clause) {
+  var expanded = expandInner(expression)
+  var flattened = expanded.reduce(function (result, clause) {
     return Object.assign(result, clause)
   }, {})
   return sort([flattened])[0]

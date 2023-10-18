@@ -1,15 +1,15 @@
-import { AstContext } from '../../Module';
-import { InclusionContext } from '../ExecutionContext';
-import { ExpressionNode } from '../nodes/shared/Node';
-import SpreadElement from '../nodes/SpreadElement';
+import type { AstContext } from '../../Module';
+import type { InclusionContext } from '../ExecutionContext';
+import type SpreadElement from '../nodes/SpreadElement';
+import type { ExpressionEntity } from '../nodes/shared/Expression';
 import ArgumentsVariable from '../variables/ArgumentsVariable';
 import ThisVariable from '../variables/ThisVariable';
-import ChildScope from './ChildScope';
+import type ChildScope from './ChildScope';
 import ReturnValueScope from './ReturnValueScope';
 
 export default class FunctionScope extends ReturnValueScope {
-	argumentsVariable: ArgumentsVariable;
-	thisVariable: ThisVariable;
+	readonly argumentsVariable: ArgumentsVariable;
+	readonly thisVariable: ThisVariable;
 
 	constructor(parent: ChildScope, context: AstContext) {
 		super(parent, context);
@@ -17,16 +17,19 @@ export default class FunctionScope extends ReturnValueScope {
 		this.variables.set('this', (this.thisVariable = new ThisVariable(context)));
 	}
 
-	findLexicalBoundary() {
+	findLexicalBoundary(): ChildScope {
 		return this;
 	}
 
-	includeCallArguments(context: InclusionContext, args: (ExpressionNode | SpreadElement)[]): void {
-		super.includeCallArguments(context, args);
+	includeCallArguments(
+		context: InclusionContext,
+		parameters: readonly (ExpressionEntity | SpreadElement)[]
+	): void {
+		super.includeCallArguments(context, parameters);
 		if (this.argumentsVariable.included) {
-			for (const arg of args) {
-				if (!arg.included) {
-					arg.include(context, false);
+			for (const argument of parameters) {
+				if (!argument.included) {
+					argument.include(context, false);
 				}
 			}
 		}

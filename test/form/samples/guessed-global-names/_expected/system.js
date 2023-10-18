@@ -1,4 +1,4 @@
-System.register(['unchanged', 'changed', 'special-character', 'with/slash', './relative.js'], function () {
+System.register(['unchanged', 'changed', 'special-character', 'with/slash', './relative.js'], (function () {
 	'use strict';
 	var foo, changedName, bar, baz, quux;
 	return {
@@ -13,10 +13,10 @@ System.register(['unchanged', 'changed', 'special-character', 'with/slash', './r
 		}, function (module) {
 			quux = module.quux;
 		}],
-		execute: function () {
+		execute: (function () {
 
 			console.log(foo, changedName, bar, baz, quux);
 
-		}
+		})
 	};
-});
+}));
