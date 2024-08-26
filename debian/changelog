@@ -1,3 +1,25 @@
+node-rollup (3.29.4-3) unstable; urgency=medium
+
+  * patch: support any timeout return type
+    This fixes build on nodejs 18.13
+
+ -- Jérémy Lal <kapouer@melix.org>  Tue, 12 Dec 2023 12:19:31 +0100
+
+node-rollup (3.29.4-2) unstable; urgency=medium
+
+  * Team upload
+  * Add patch for node-magic-string 0.30.5
+
+ -- Yadd <yadd@debian.org>  Thu, 02 Nov 2023 16:40:30 +0400
+
+node-rollup (3.29.4-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 3.29.4
+  * Refresh patches
+
+ -- Yadd <yadd@debian.org>  Thu, 02 Nov 2023 15:57:37 +0400
+
 node-rollup (3.28.0-2) unstable; urgency=medium
 
   * Team upload

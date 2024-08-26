@@ -24,7 +24,7 @@ Last-Update: 2022-04-28
  
  -c, --config <filename>     Use this config file (if argument is used but value
                                is unspecified, defaults to rollup.config.js)
-@@ -95,24 +99,34 @@
+@@ -96,24 +100,34 @@
  --watch.onStart <cmd>       Shell command to run on `"START"` event
  --watch.skipWrite           Do not write files to disk when watching
  

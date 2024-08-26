@@ -1,0 +1,53 @@
+Description: tsc workaround for magic-string 0.30.5
+Author: Yadd <yadd@debian.org>
+Forwarded: not-needed
+Last-Update: 2023-11-02
+
+--- a/src/Chunk.ts
++++ b/src/Chunk.ts
+@@ -352,6 +352,7 @@
+ 				])
+ 			),
+ 			imports: renderedChunkInfo.imports.map(finalize),
++// @ts-ignore
+ 			map,
+ 			preliminaryFileName,
+ 			referencedFiles: renderedChunkInfo.referencedFiles.map(finalize),
+--- a/src/utils/collapseSourcemaps.ts
++++ b/src/utils/collapseSourcemaps.ts
+@@ -229,6 +229,7 @@
+ 		resetSourcemapCache(module.originalSourcemap, module.sourcemapChain);
+ 	}
+ 
++// @ts-ignore
+ 	return new SourceMap({ file, mappings, names, sources, sourcesContent });
+ }
+ 
+--- a/src/utils/renderChunks.ts
++++ b/src/utils/renderChunks.ts
+@@ -155,6 +155,7 @@
+ 		const decodedMap = magicString.generateDecodedMap({});
+ 		map = collapseSourcemaps(
+ 			resultingFile,
++// @ts-ignore
+ 			decodedMap,
+ 			usedModules,
+ 			sourcemapChain,
+--- a/src/utils/transform.ts
++++ b/src/utils/transform.ts
+@@ -129,6 +129,7 @@
+ 						error_.hook = 'transform';
+ 						return pluginContext.error(error_);
+ 					},
++// @ts-ignore
+ 					getCombinedSourcemap() {
+ 						const combinedMap = collapseSourcemap(
+ 							id,
+@@ -148,6 +149,7 @@
+ 						return new SourceMap({
+ 							...combinedMap,
+ 							file: null as never,
++// @ts-ignore
+ 							sourcesContent: combinedMap.sourcesContent!
+ 						});
+ 					},
