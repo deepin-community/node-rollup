@@ -1,0 +1,16 @@
+Description: setTimeout return type can change depending on browser/node env
+ It typically changed between node 18.13 and node 18.19
+Author: Jérémy Lal <kapouer@melix.org>
+Last-Update: 2023-12-12
+Forwarded: https://github.com/rollup/rollup/pull/5296
+--- a/src/watch/watch.ts
++++ b/src/watch/watch.ts
+@@ -35,7 +35,7 @@
+ 	readonly emitter: RollupWatcher;
+ 
+ 	private buildDelay = 0;
+-	private buildTimeout: NodeJS.Timer | null = null;
++	private buildTimeout: ReturnType<typeof setTimeout> | null = null;
+ 	private closed = false;
+ 	private readonly invalidatedIds = new Map<string, ChangeEvent>();
+ 	private rerun = false;

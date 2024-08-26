@@ -3,11 +3,11 @@ disable-help.patch
 help-md-format-fixes.patch
 search-module-in-debian-dirs.diff
 dont-build-browser-module.diff
-#dont-fail-on-warn.diff
-#ignore-failure-on-dynamic-import.diff
+# dont-fail-on-warn.diff
+# ignore-failure-on-dynamic-import.diff
 fix-shebang.diff
 fix-commonjs-path.diff
 update-to-recent-plugin-node-resolve.patch
-#dont-fail-on-circular-dependencies.patch
-fix-tsc-for-node-magic-string-0.30.patch
-fix-tsc-for-node-signal-exit-4.1.patch
+# dont-fail-on-circular-dependencies.patch
+fix-for-magic-string-0.30.5.patch
+fix-timeout-type.patch
