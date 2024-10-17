@@ -1,3 +1,9 @@
+node-rollup (3.29.4-3deepin1) unstable; urgency=medium
+
+  * fix CVE-2024-47068 
+
+ -- zengwei <zengwei1@uniontech.com>  Tue, 15 Oct 2024 11:28:27 +0800
+
 node-rollup (3.29.4-3) unstable; urgency=medium
 
   * patch: support any timeout return type
