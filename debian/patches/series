@@ -11,5 +11,3 @@ update-to-recent-plugin-node-resolve.patch
 # dont-fail-on-circular-dependencies.patch
 fix-for-magic-string-0.30.5.patch
 fix-timeout-type.patch
-CVE-2024-47068.patch
-
