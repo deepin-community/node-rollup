@@ -1,8 +1,10 @@
-node-rollup (3.29.4-3deepin1) unstable; urgency=medium
+node-rollup (3.29.5-1) unstable; urgency=medium
 
-  * fix CVE-2024-47068 
+  * Team upload
+  * Declare compliance with policy 4.7.0
+  * New upstream version (Closes: #1082712, CVE-2024-47068)
 
- -- zengwei <zengwei1@uniontech.com>  Tue, 15 Oct 2024 11:28:27 +0800
+ -- Yadd <yadd@debian.org>  Wed, 25 Sep 2024 14:08:30 +0400
 
 node-rollup (3.29.4-3) unstable; urgency=medium
 

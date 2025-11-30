@@ -52,7 +52,7 @@ Build-Depends: debhelper-compat (= 13)
  , nodejs (>= 14)
  , npm <pkg.node-rollup.npm>
  , rollup (>= 2.61~) <!pkg.node-rollup.npm>
-Standards-Version: 4.6.2
+Standards-Version: 4.7.0
 Vcs-Browser: https://salsa.debian.org/js-team/node-rollup
 Vcs-Git: https://salsa.debian.org/js-team/node-rollup.git
 Homepage: https://rollupjs.org
